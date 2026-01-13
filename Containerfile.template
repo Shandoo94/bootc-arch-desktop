@@ -1,0 +1,30 @@
+# Stage 1: Customize image
+FROM TEMPLATE_BASE_IMAGE_REF as builder
+
+# Make system update
+RUN pacman -Syu --noconfirm
+
+# Run ansible for customization
+COPY ansible /tmp/ansible
+RUN pacman -Sy --noconfirm ansible && \
+ansible-playbook -i /tmp/ansible/inventory/inventory.yaml /tmp/ansible/site.yaml -e "target=atlas" && \
+pacman -Sns ansible --noconfirm
+
+# Final cleanup
+RUN pacman -Scc --noconfirm
+
+# Stage 2: Final OS image
+FROM scratch
+COPY --from=builder / /
+
+# Final sanity check
+RUN bootc container lint
+
+LABEL org.opencontainers.image.title="Arch Linux Bootc Base"
+LABEL org.opencontainers.image.description="Bootc-compatible image built on Arch Linux"
+LABEL org.opencontainers.image.version="TEMPLATE_VERSION"
+LABEL org.opencontainers.image.revision="TEMPLATE_REVISION"
+LABEL org.opencontainers.image.created="TEMPLATE_CREATED"
+LABEL org.opencontainers.image.source="https://github.com/Shandoo94/bootc-arch-desktop"
+
+CMD ["/sbin/init"]

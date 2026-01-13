@@ -1,0 +1,5 @@
+- hosts: "{{ target }}"
+  name: Configure system
+  connection: local
+  roles:
+    - theme
