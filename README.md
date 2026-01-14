@@ -24,3 +24,4 @@ podman build -t bootc-arch-desktop .
 - systemd files are placed under `/usr/lib/systemd/{system,user}/*`
 - tmpfiles.d configs are placed under `/usr/lib/tmpfiles.d/*.conf`
 - sysusersd configs are placed under `/usr/lib/sysusers.d/*.conf`
+- Scripts/binaries are placed under `/usr/local/bin/*`
