@@ -1,1 +1,2 @@
-theme_name: everforest
+theme_config:
+  name: everforest

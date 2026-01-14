@@ -11,6 +11,7 @@ Adhere to the general best practices for Ansible.
 ### Role Structure
 - Place roles in `ansible/rules/<role_name>/`
 - Include a `README.md` in each role documenting its purpose and variables
+- If applicable, the default variables for a role should be ordered in a struct `{{role_name}}_config`
 
 ### Task Design
 - Use Ansible modules instead of shell commands when possible
