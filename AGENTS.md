@@ -7,6 +7,7 @@ This project customizes a bootc base image to create immutable OS images for fur
 ## Ansible Guidelines
 
 Adhere to the general best practices for Ansible.
+Placement of files, e.g. skripts, configurations and so on, should adhere to Linux FHS best practices.
 
 ### Role Structure
 - Place roles in `ansible/rules/<role_name>/`
