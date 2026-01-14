@@ -1,4 +1,4 @@
-- hosts: "{{ target }}"
+- hosts: localhost
   name: Configure system
   connection: local
   roles:
