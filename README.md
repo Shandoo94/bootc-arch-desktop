@@ -16,3 +16,12 @@ Or manually:
 ./scripts/make-containerfile.sh  # Generate Containerfile from template
 podman build -t bootc-arch-desktop .
 ```
+
+## Containerfile
+
+### Immutable State
+
+Inside the Containerfile,
+- systemd files are placed under `/usr/lib/systemd/{system,user}/*`
+- tmpfiles.d configs are placed under `/usr/lib/tmpfiles.d/*.conf`
+- sysusersd configs are placed under `/usr/lib/sysusers.d/*.conf`
