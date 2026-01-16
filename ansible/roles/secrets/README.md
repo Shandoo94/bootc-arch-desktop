@@ -91,7 +91,7 @@ All variables are namespaced under `secrets_config`:
 - `runtime_host_dir`: Host secrets directory (default: `/run/secrets/host`)
 
 ### Packages
-- `packages`: List of packages to install (default: `[sops, age, yq]`)
+- `packages`: List of packages to install (default: `[sops, yq]`)
 
 ### Symlink Paths (Optional)
 - `paths`: Dictionary mapping secret keys to filesystem paths for symlink creation
@@ -109,7 +109,7 @@ secrets_config:
   paths:
     global:
       my.secret: /var/lib/app/secret
-      user_pw.tiwaz: /etc/user/password
+      user_pw.alice: /etc/user/password
     atlas:  # hostname
       ssh_host_ed25519_key: /etc/ssh/ssh_host_ed25519_key
 ```
@@ -124,7 +124,7 @@ secrets_config:
 
 Using the configuration above on host `atlas`:
 - `/var/lib/app/secret` → `/run/secrets/share/my/secret`
-- `/etc/user/password` → `/run/secrets/share/user_pw/tiwaz`
+- `/etc/user/password` → `/run/secrets/share/user_pw/alice`
 - `/etc/ssh/ssh_host_ed25519_key` → `/run/secrets/host/ssh_host_ed25519_key`
 
 Parent directories are automatically created with `0755` permissions.
