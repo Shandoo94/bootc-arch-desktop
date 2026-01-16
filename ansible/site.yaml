@@ -2,4 +2,5 @@
   name: Configure system
   connection: local
   roles:
+    - secrets
     - theme
