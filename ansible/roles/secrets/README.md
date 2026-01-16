@@ -4,6 +4,30 @@
 
 This Ansible role implements sops-nix-like secrets management for immutable bootc images. Secrets are encrypted with SOPS at build time, shipped in the container image, and decrypted at boot time to tmpfs (`/run/secrets`).
 
+## Prerequisites
+
+For host-specific secrets to work correctly in containerized builds, the playbook must set the `ansible_hostname` fact from `/etc/hostname` before running this role. This is because Ansible's automatic fact gathering may not detect the hostname correctly in container environments.
+
+**Example in your playbook:**
+```yaml
+- name: Configure system
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Read hostname from /etc/hostname
+      ansible.builtin.slurp:
+        src: /etc/hostname
+      register: hostname_content
+      tags: [always]
+
+    - name: Set ansible_hostname fact from /etc/hostname
+      ansible.builtin.set_fact:
+        ansible_hostname: "{{ hostname_content.content | b64decode | trim }}"
+      tags: [always]
+  roles:
+    - secrets
+```
+
 ## Architecture
 
 ### Build Time (Ansible)
@@ -110,9 +134,14 @@ secrets_config:
     global:
       my.secret: /var/lib/app/secret
       user_pw.alice: /etc/user/password
-    atlas:  # hostname
+    atlas:  # hostname (as detected by ansible_hostname fact)
       ssh_host_ed25519_key: /etc/ssh/ssh_host_ed25519_key
 ```
+
+**Important Notes:**
+- The hostname key must match the actual system hostname (from `ansible_hostname` fact), not the Ansible inventory hostname
+- In container builds, ensure your playbook sets `ansible_hostname` from `/etc/hostname` (see Prerequisites section)
+- Example: If you set the hostname with `echo "atlas" > /etc/hostname` in your Containerfile, use `atlas` as the key in `secrets_config.paths`
 
 ### How It Works
 
