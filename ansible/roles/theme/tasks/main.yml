@@ -11,7 +11,7 @@
 
 - name: Set theme polarity fact
   ansible.builtin.set_fact:
-    theme:
+    theme_data:
       polarity: "{{ theme_polarity_slurp.content | b64decode | trim }}"
       colors: "{{ theme_base16 }}"
       wallpaper_path: "{{ role_path }}/files/themes/{{ theme_config.name }}/wp.jpg"
