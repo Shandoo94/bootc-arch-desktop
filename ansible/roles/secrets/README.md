@@ -2,12 +2,12 @@
 
 ## Overview
 
-This Ansible role implements sops-nix-like secrets management for immutable bootc images. Secrets are encrypted with SOPS and age at build time, shipped in the container image, and decrypted at boot time to tmpfs (`/run/secrets`).
+This Ansible role implements sops-nix-like secrets management for immutable bootc images. Secrets are encrypted with SOPS at build time, shipped in the container image, and decrypted at boot time to tmpfs (`/run/secrets`).
 
 ## Architecture
 
 ### Build Time (Ansible)
-1. Install `sops`, `age`, and `yq` packages
+1. Install `sops` and `yq` packages
 2. Copy encrypted secret files to `/usr/share/secrets/`
 3. Install decryption script to `/usr/local/bin/decrypt-secrets`
 4. Install and enable systemd service `sops-secrets.service`
@@ -92,6 +92,59 @@ All variables are namespaced under `secrets_config`:
 
 ### Packages
 - `packages`: List of packages to install (default: `[sops, age, yq]`)
+
+### Symlink Paths (Optional)
+- `paths`: Dictionary mapping secret keys to filesystem paths for symlink creation
+  - `global`: Map of global secret keys to symlink destinations
+  - `<hostname>`: Map of host-specific secret keys to symlink destinations (per host)
+
+## Symlink Paths Feature
+
+Similar to sops-nix, you can create symlinks at arbitrary filesystem locations pointing to decrypted secrets. This is useful for legacy applications expecting secrets at specific paths or system services requiring secrets in standard locations.
+
+### Configuration Example
+
+```yaml
+secrets_config:
+  paths:
+    global:
+      my.secret: /var/lib/app/secret
+      user_pw.tiwaz: /etc/user/password
+    atlas:  # hostname
+      ssh_host_ed25519_key: /etc/ssh/ssh_host_ed25519_key
+```
+
+### How It Works
+
+1. **Build Time Validation**: Ansible validates that all referenced secret keys exist in the encrypted YAML files (keys are visible even when encrypted)
+2. **tmpfiles.d Generation**: Ansible generates `/usr/lib/tmpfiles.d/sops-secrets-symlinks.conf` with symlink directives
+3. **Boot Time Creation**: After secrets are decrypted, systemd-tmpfiles creates the symlinks automatically
+
+### Results
+
+Using the configuration above on host `atlas`:
+- `/var/lib/app/secret` → `/run/secrets/share/my/secret`
+- `/etc/user/password` → `/run/secrets/share/user_pw/tiwaz`
+- `/etc/ssh/ssh_host_ed25519_key` → `/run/secrets/host/ssh_host_ed25519_key`
+
+Parent directories are automatically created with `0755` permissions.
+
+### Validation
+
+If you reference a non-existent secret key, the Ansible build will fail with a clear error message:
+
+```
+FAILED! => {"assertion": "...", "msg": "Secret 'nonexistent.key' referenced in paths.global does not exist in /path/to/global_secrets.yaml"}
+```
+
+This prevents deployment of broken configurations.
+
+### Use Cases
+
+- **SSH Host Keys**: Place decrypted SSH host keys at `/etc/ssh/ssh_host_*_key`
+- **Application Secrets**: Legacy apps expecting secrets at hardcoded paths like `/etc/app/secret`
+- **Service Credentials**: System services requiring credentials in specific locations
+- **Compatibility**: Migrate existing applications without code changes
 
 ## Usage
 
