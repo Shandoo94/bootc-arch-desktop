@@ -5,12 +5,15 @@ FROM TEMPLATE_BASE_IMAGE_REF as builder
 #RUN mkdir -p /var/tmp && \
 #pacman -Syu --noconfirm
 
+RUN echo "atlas" > /etc/hostname
+
 # Run ansible for customization
 COPY ansible /tmp/ansible
 RUN pacman -Sy --noconfirm ansible && \
 ansible-playbook -i /tmp/ansible/inventory/inventory.yaml /tmp/ansible/site.yaml && \
 pacman -Rns ansible --noconfirm && \
-rm -dr /tmp/ansible
+rm -dr /tmp/ansible && \
+rm -dr /var/roothome
 
 # Ensure initramfs is up-to-date
 #RUN kver=$(ls /usr/lib/modules/ | grep -v '^\.' | sort -V | tail -n1) && \
