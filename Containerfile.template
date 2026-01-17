@@ -19,6 +19,14 @@ rm -dr /var/roothome
 #dracut --force "/usr/lib/modules/${kver}/initramfs.img" && \
 #rm -dr /var/tmp
 
+# Create user 'archie' with home directory and add to wheel group
+RUN set -euo pipefail && \
+pacman -Sy --noconfirm sudo && \
+useradd -m -G wheel -s /bin/bash archie && \
+echo "archie:archie" | chpasswd && \
+echo "%wheel ALL=(ALL:ALL) ALL" > /etc/sudoers.d/wheel && \
+echo "d /var/home/archie 0750 archie archie -" > "/usr/lib/tmpfiles.d/archie-home-dir.conf"
+
 # Final cleanup
 RUN pacman -Scc --noconfirm
 
