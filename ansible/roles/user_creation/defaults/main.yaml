@@ -1,1 +1,2 @@
-user_creation_config:
+user_creation_home_dir: "/var/home"
+user_creation_users: []

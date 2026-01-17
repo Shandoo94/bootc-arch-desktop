@@ -7,3 +7,9 @@ secrets_paths:
       tiwaz: /etc/user/password
   atlas:
     ssh_host_ed25519_key: /etc/ssh/ssh_host_ed25519_key
+
+user_creation_users:
+  - name: tiwaz
+    shell: zsh
+    hashed_pw_file: /run/secrets/user_pw/tiwaz
+    extra_groups: ["podman"]

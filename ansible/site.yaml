@@ -10,3 +10,4 @@
   roles:
     - secrets
     - theme
+    - user_creation
