@@ -1,11 +1,11 @@
 - name: Load theme base16.yaml
   ansible.builtin.include_vars:
-    file: "{{ role_path }}/files/themes/{{ theme_config.name }}/base16.yaml"
+    file: "{{ role_path }}/files/themes/{{ theme_name }}/base16.yaml"
     name: theme_base16
 
 - name: Read theme polarity
   ansible.builtin.slurp:
-    src: "{{ role_path }}/files/themes/{{ theme_config.name }}/polarity.txt"
+    src: "{{ role_path }}/files/themes/{{ theme_name }}/polarity.txt"
   register: theme_polarity_slurp
   changed_when: false
 
@@ -14,4 +14,4 @@
     theme_data:
       polarity: "{{ theme_polarity_slurp.content | b64decode | trim }}"
       colors: "{{ theme_base16 }}"
-      wallpaper_path: "{{ role_path }}/files/themes/{{ theme_config.name }}/wp.jpg"
+      wallpaper_path: "{{ role_path }}/files/themes/{{ theme_name }}/wp.jpg"

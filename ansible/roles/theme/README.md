@@ -34,5 +34,5 @@ This role sets the following facts:
       theme_name: nord
 ```
 
-After this role runs, colors can be accessed via `theme.colors.base00`, etc.
+After this role runs, colors can be accessed via `theme_data.colors.base00`, etc.
 
