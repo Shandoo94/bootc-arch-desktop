@@ -6,7 +6,7 @@ This Ansible role implements sops-nix-like secrets management for immutable boot
 
 ## Prerequisites
 
-For host-specific secrets to work correctly in containerized builds, the playbook must set the `ansible_hostname` fact from `/etc/hostname` before running this role. This is because Ansible's automatic fact gathering may not detect the hostname correctly in container environments.
+For host-specific secrets to work correctly in containerized builds, the playbook must set the `container_hostname` fact from `/etc/hostname` before running this role. This is because Ansible's automatic fact gathering may not detect the hostname correctly in container environments.
 
 **Example in your playbook:**
 ```yaml
@@ -20,9 +20,9 @@ For host-specific secrets to work correctly in containerized builds, the playboo
       register: hostname_content
       tags: [always]
 
-    - name: Set ansible_hostname fact from /etc/hostname
+    - name: Set container_hostname fact from /etc/hostname
       ansible.builtin.set_fact:
-        ansible_hostname: "{{ hostname_content.content | b64decode | trim }}"
+        container_hostname: "{{ hostname_content.content | b64decode | trim }}"
       tags: [always]
   roles:
     - secrets
@@ -97,28 +97,26 @@ User must place the age private key at `/var/lib/sops/age/key.txt` before first 
 
 ## Role Variables
 
-All variables are namespaced under `secrets_config`:
-
 ### Source Paths (Build Time)
-- `sops_config`: Path to SOPS config (default: `{{ playbook_dir }}/secrets/.sops.yaml`)
-- `global_secrets`: Path to global secrets YAML (default: `{{ playbook_dir }}/secrets/global_secrets.yaml`)
-- `host_secrets`: Path to host secrets YAML (default: `{{ playbook_dir }}/secrets/host_secrets.yaml`)
+- `secrets_sops_config`: Path to SOPS config (default: `{{ playbook_dir }}/secrets/.sops.yaml`)
+- `secrets_global`: Path to global secrets YAML (default: `{{ playbook_dir }}/secrets/global_secrets.yaml`)
+- `secrets_host`: Path to host secrets YAML (default: `{{ playbook_dir }}/secrets/host_secrets.yaml`)
 
 ### Target Paths (In Image)
 - `secrets_source_dir`: Where encrypted secrets are stored (default: `/usr/share/secrets`)
-- `script_path`: Decryption script location (default: `/usr/local/bin/decrypt-secrets`)
+- `secrets_script_path`: Decryption script location (default: `/usr/local/bin/decrypt-secrets`)
 
 ### Runtime Paths (At Boot)
-- `age_key_path`: Age private key location (default: `/var/lib/sops/age/key.txt`)
-- `runtime_secrets_dir`: Base runtime directory (default: `/run/secrets`)
-- `runtime_global_dir`: Global secrets directory (default: `/run/secrets/share`)
-- `runtime_host_dir`: Host secrets directory (default: `/run/secrets/host`)
+- `secrets_age_key_path`: Age private key location (default: `/var/lib/sops/age/key.txt`)
+- `secrets_runtime_dir`: Base runtime directory (default: `/run/secrets`)
+- `secrets_runtime_global_dir`: Global secrets directory (default: `/run/secrets/share`)
+- `secrets_runtime_host_dir`: Host secrets directory (default: `/run/secrets/host`)
 
 ### Packages
-- `packages`: List of packages to install (default: `[sops, yq]`)
+- `secrets_packages`: List of packages to install (default: `[sops, yq]`)
 
 ### Symlink Paths (Optional)
-- `paths`: Dictionary mapping secret keys to filesystem paths for symlink creation
+- `secrets_paths`: Dictionary mapping secret keys to filesystem paths for symlink creation
   - `global`: Map of global secret keys to symlink destinations
   - `<hostname>`: Map of host-specific secret keys to symlink destinations (per host)
 
@@ -129,19 +127,18 @@ Similar to sops-nix, you can create symlinks at arbitrary filesystem locations p
 ### Configuration Example
 
 ```yaml
-secrets_config:
-  paths:
-    global:
-      my.secret: /var/lib/app/secret
-      user_pw.alice: /etc/user/password
-    atlas:  # hostname (as detected by ansible_hostname fact)
-      ssh_host_ed25519_key: /etc/ssh/ssh_host_ed25519_key
+secrets_paths:
+  global:
+    my.secret: /var/lib/app/secret
+    user_pw.alice: /etc/user/password
+  atlas:  # hostname (as detected by container_hostname fact)
+    ssh_host_ed25519_key: /etc/ssh/ssh_host_ed25519_key
 ```
 
 **Important Notes:**
-- The hostname key must match the actual system hostname (from `ansible_hostname` fact), not the Ansible inventory hostname
-- In container builds, ensure your playbook sets `ansible_hostname` from `/etc/hostname` (see Prerequisites section)
-- Example: If you set the hostname with `echo "atlas" > /etc/hostname` in your Containerfile, use `atlas` as the key in `secrets_config.paths`
+- The hostname key must match the actual system hostname (from `container_hostname` fact), not the Ansible inventory hostname
+- In container builds, ensure your playbook sets `container_hostname` from `/etc/hostname` (see Prerequisites section)
+- Example: If you set the hostname with `echo "atlas" > /etc/hostname` in your Containerfile, use `atlas` as the key in `secrets_paths`
 
 ### How It Works
 

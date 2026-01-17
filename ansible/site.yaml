@@ -1,6 +1,22 @@
 - name: Configure system
   hosts: localhost
   connection: local
+  pre_tasks:
+    - name: Read hostname from /etc/hostname
+      ansible.builtin.slurp:
+        src: /etc/hostname
+      register: hostname_content
+      tags: [always]
+
+    - name: Set container_hostname fact from /etc/hostname
+      ansible.builtin.set_fact:
+        container_hostname: "{{ lookup('ansible.builtin.file', '/etc/hostname') }}"
+      tags: [always]
+
+    - name: Debug container_hostname
+      ansible.builtin.debug:
+        msg: "container_hostname: {{ container_hostname }}"
+      tags: [always]
   roles:
     - secrets
     - theme

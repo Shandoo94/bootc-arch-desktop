@@ -5,11 +5,10 @@ FROM TEMPLATE_BASE_IMAGE_REF as builder
 #RUN mkdir -p /var/tmp && \
 #pacman -Syu --noconfirm
 
-RUN echo "atlas" > /etc/hostname
-
 # Run ansible for customization
 COPY ansible /tmp/ansible
 RUN pacman -Sy --noconfirm ansible && \
+echo "atlas" > /etc/hostname && \
 ansible-playbook -i /tmp/ansible/inventory/inventory.yaml /tmp/ansible/site.yaml && \
 pacman -Rns ansible --noconfirm && \
 rm -dr /tmp/ansible && \
