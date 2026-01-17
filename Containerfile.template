@@ -7,10 +7,10 @@ FROM TEMPLATE_BASE_IMAGE_REF as builder
 
 # Run ansible for customization
 COPY ansible /tmp/ansible
-RUN pacman -Sy --noconfirm ansible && \
+RUN pacman -Sy --noconfirm ansible python-jmespath && \
 echo "atlas" > /etc/hostname && \
 ansible-playbook -i /tmp/ansible/inventory/inventory.yaml /tmp/ansible/site.yaml && \
-pacman -Rns ansible --noconfirm && \
+pacman -Rns ansible python-jmespath --noconfirm && \
 rm -dr /tmp/ansible && \
 rm -dr /var/roothome
 
