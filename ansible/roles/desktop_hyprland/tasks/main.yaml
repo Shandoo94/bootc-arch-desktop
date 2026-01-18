@@ -1,0 +1,22 @@
+- name: Install software
+  community.general.pacman:
+    name:
+      - hyprland
+      - hyprlock
+      - hypridle
+      - kitty
+      - yazi
+      - rofi
+      - waybar
+      - dunst
+      - ffmpeg # yazi optional dependencies
+      - p7zip
+      - jq
+      - poppler
+      - fd
+      - ripgrep
+      - fzf
+      - zoxide
+      - imagemagick
+    state: present
+  become: true
