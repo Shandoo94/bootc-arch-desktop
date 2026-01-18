@@ -4,30 +4,6 @@
 
 This Ansible role implements sops-nix-like secrets management for immutable bootc images. Secrets are encrypted with SOPS at build time, shipped in the container image, and decrypted at boot time to tmpfs (`/run/secrets`).
 
-## Prerequisites
-
-For host-specific secrets to work correctly in containerized builds, the playbook must set the `container_hostname` fact from `/etc/hostname` before running this role. This is because Ansible's automatic fact gathering may not detect the hostname correctly in container environments.
-
-**Example in your playbook:**
-```yaml
-- name: Configure system
-  hosts: localhost
-  connection: local
-  tasks:
-    - name: Read hostname from /etc/hostname
-      ansible.builtin.slurp:
-        src: /etc/hostname
-      register: hostname_content
-      tags: [always]
-
-    - name: Set container_hostname fact from /etc/hostname
-      ansible.builtin.set_fact:
-        container_hostname: "{{ hostname_content.content | b64decode | trim }}"
-      tags: [always]
-  roles:
-    - secrets
-```
-
 ## Architecture
 
 ### Build Time (Ansible)
@@ -130,15 +106,11 @@ Similar to sops-nix, you can create symlinks at arbitrary filesystem locations p
 secrets_paths:
   global:
     my.secret: /var/lib/app/secret
-    user_pw.alice: /etc/user/password
-  atlas:  # hostname (as detected by container_hostname fact)
+    user_pw:
+      alice: /etc/user/password
+  atlas:  # hostname
     ssh_host_ed25519_key: /etc/ssh/ssh_host_ed25519_key
 ```
-
-**Important Notes:**
-- The hostname key must match the actual system hostname (from `container_hostname` fact), not the Ansible inventory hostname
-- In container builds, ensure your playbook sets `container_hostname` from `/etc/hostname` (see Prerequisites section)
-- Example: If you set the hostname with `echo "atlas" > /etc/hostname` in your Containerfile, use `atlas` as the key in `secrets_paths`
 
 ### How It Works
 
@@ -201,14 +173,14 @@ This prevents deployment of broken configurations.
 
 ### Accessing Secrets at Runtime
 
-Secrets are available as files in `/run/secrets/`:
+Secrets are available as files in `/run/secrets/` with permissions 0400 for `root`:
 
 ```bash
 # Read a global secret
-cat /run/secrets/share/service/api_key
+sudo cat /run/secrets/share/service/api_key
 
 # Read a host-specific secret
-cat /run/secrets/host/service/config
+sudo cat /run/secrets/host/service/config
 ```
 
 ### Installing the Age Key
@@ -293,9 +265,8 @@ Common issues:
 **Unit Name**: `sops-secrets.service`
 
 **Ordering**:
-- Runs after: `local-fs.target` (requires mounted filesystems)
 - Runs before: `systemd-sysusers.service` (user passwords may be in secrets)
-- Runs before: `sysinit.target` (early boot)
+- Runs after: `/var`, `/usr`, `/run` are available
 
 **Failure Behavior**:
 - If age key is missing: Service fails, system continues booting
@@ -303,18 +274,6 @@ Common issues:
 - Errors are logged to systemd journal
 
 **Note**: The system remains functional even if secrets fail to decrypt. This allows recovery through alternate means (console access, emergency mode, etc.).
-
-## Integration with Other Roles
-
-This role is designed to run early in the playbook before roles that may need secrets (e.g., user creation with passwords).
-
-Example playbook order:
-```yaml
-roles:
-  - secrets        # Install secrets management
-  - user_creation  # May read passwords from /run/secrets/share/
-  - theme
-```
 
 ## Tags
 

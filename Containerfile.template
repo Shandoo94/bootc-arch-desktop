@@ -1,15 +1,10 @@
 # Stage 1: Customize image
 FROM TEMPLATE_BASE_IMAGE_REF as builder
 
-# Make system update
-#RUN mkdir -p /var/tmp && \
-#pacman -Syu --noconfirm
-
 # Run ansible for customization
 COPY ansible /tmp/ansible
 RUN pacman -Sy --noconfirm ansible python-jmespath && \
-echo "atlas" > /etc/hostname && \
-ansible-playbook -i /tmp/ansible/inventory/inventory.yaml /tmp/ansible/site.yaml && \
+ansible-playbook -i /tmp/ansible/inventory/inventory.yaml /tmp/ansible/site.yaml --limit "atlas" && \
 pacman -Rns ansible python-jmespath --noconfirm && \
 rm -dr /tmp/ansible && \
 rm -dr /var/roothome
@@ -18,14 +13,6 @@ rm -dr /var/roothome
 #RUN kver=$(ls /usr/lib/modules/ | grep -v '^\.' | sort -V | tail -n1) && \
 #dracut --force "/usr/lib/modules/${kver}/initramfs.img" && \
 #rm -dr /var/tmp
-
-# Create user 'archie' with home directory and add to wheel group
-RUN set -euo pipefail && \
-pacman -Sy --noconfirm sudo && \
-useradd -m -G wheel -s /bin/bash archie && \
-echo "archie:archie" | chpasswd && \
-echo "%wheel ALL=(ALL:ALL) ALL" > /etc/sudoers.d/wheel && \
-echo "d /var/home/archie 0750 archie archie -" > "/usr/lib/tmpfiles.d/archie-home-dir.conf"
 
 # Final cleanup
 RUN pacman -Scc --noconfirm
