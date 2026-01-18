@@ -7,15 +7,8 @@ RUN pacman -Sy --noconfirm ansible python-jmespath && \
 ansible-playbook -i /tmp/ansible/inventory/inventory.yaml /tmp/ansible/site.yaml --limit "atlas" && \
 pacman -Rns ansible python-jmespath --noconfirm && \
 rm -dr /tmp/ansible && \
-rm -dr /var
-
-# Ensure initramfs is up-to-date
-#RUN kver=$(ls /usr/lib/modules/ | grep -v '^\.' | sort -V | tail -n1) && \
-#dracut --force "/usr/lib/modules/${kver}/initramfs.img" && \
-#rm -dr /var/tmp
-
-# Final cleanup
-RUN pacman -Scc --noconfirm
+rm -dr /var/{roothome,cache,db,lib} && \
+pacman -Scc --noconfirm
 
 # Stage 2: Final OS image
 FROM scratch
