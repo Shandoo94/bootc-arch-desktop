@@ -94,3 +94,8 @@
     mode: "0644"
   become: true
   tags: [user_creation, systemd, credentials]
+
+- name: Set facts for created users
+  ansible.builtin.set_fact:
+    user_creation_data: "{{ user_creation_data | default([]) + [{'name': item.name, 'home_dir': item.home_dir}] }}"
+  loop: "{{ user_creation_users }}"
