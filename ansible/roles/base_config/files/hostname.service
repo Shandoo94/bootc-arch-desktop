@@ -1,0 +1,12 @@
+[Unit]
+Description=Set hostname from inventory
+Before=network-pre.target
+Wants=network-pre.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/set-hostname
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

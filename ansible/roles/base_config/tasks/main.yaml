@@ -1,0 +1,55 @@
+---
+- name: Install sudo
+  community.general.pacman:
+    name: sudo
+    state: present
+  become: true
+  tags: [base_config, packages]
+
+- name: Configure wheel group sudoers
+  ansible.builtin.copy:
+    content: "%wheel ALL=(ALL:ALL) ALL"
+    dest: /etc/sudoers.d/wheel
+    owner: root
+    group: root
+    mode: "0440"
+  become: true
+  validate: 'visudo -cf %s'
+  tags: [base_config, sudo]
+
+- name: Create systemd system directory
+  ansible.builtin.file:
+    path: /usr/lib/systemd/system
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+  tags: [base_config, systemd]
+
+- name: Install hostname set script
+  ansible.builtin.template:
+    src: set-hostname.sh.j2
+    dest: /usr/local/bin/set-hostname
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+  tags: [base_config, systemd]
+
+- name: Install hostname systemd service
+  ansible.builtin.copy:
+    src: hostname.service
+    dest: /usr/lib/systemd/system/hostname.service
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  tags: [base_config, systemd]
+
+- name: Enable hostname service
+  ansible.builtin.systemd_service:
+    name: hostname.service
+    enabled: true
+  become: true
+  tags: [base_config, systemd]
