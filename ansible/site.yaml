@@ -1,5 +1,5 @@
 - name: Configure system
-  hosts: localhost
+  hosts: all
   connection: local
   roles:
     - base_config
