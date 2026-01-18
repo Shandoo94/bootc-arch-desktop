@@ -13,43 +13,91 @@
     owner: root
     group: root
     mode: "0440"
+    validate: "visudo -cf %s"
   become: true
-  validate: 'visudo -cf %s'
   tags: [base_config, sudo]
 
-- name: Create systemd system directory
+- name: Create tmpfiles.d directory
   ansible.builtin.file:
-    path: /usr/lib/systemd/system
+    path: /usr/lib/tmpfiles.d
     state: directory
     owner: root
     group: root
     mode: "0755"
   become: true
-  tags: [base_config, systemd]
+  tags: [base_config, localization]
 
-- name: Install hostname set script
-  ansible.builtin.template:
-    src: set-hostname.sh.j2
-    dest: /usr/local/bin/set-hostname
-    owner: root
-    group: root
-    mode: "0755"
-  become: true
-  tags: [base_config, systemd]
-
-- name: Install hostname systemd service
+- name: Configure timezone symlink
   ansible.builtin.copy:
-    src: hostname.service
-    dest: /usr/lib/systemd/system/hostname.service
+    content: "L+ /etc/localtime - - - - /usr/share/zoneinfo/{{ base_config_timezone }}"
+    dest: /usr/lib/tmpfiles.d/timezone.conf
     owner: root
     group: root
     mode: "0644"
   become: true
-  tags: [base_config, systemd]
+  tags: [base_config, localization]
 
-- name: Enable hostname service
-  ansible.builtin.systemd_service:
-    name: hostname.service
-    enabled: true
+- name: Ensure locales are uncommented in locale.gen
+  ansible.builtin.lineinfile:
+    path: /etc/locale.gen
+    regexp: "^#{{ item }} UTF-8"
+    line: "{{ item }} UTF-8"
   become: true
-  tags: [base_config, systemd]
+  loop: "{{ base_config_locales }}"
+  tags: [base_config, localization]
+
+- name: Generate locales
+  ansible.builtin.command: locale-gen
+  become: true
+  changed_when: false
+  tags: [base_config, localization]
+
+- name: Create locale.conf directory
+  ansible.builtin.file:
+    path: "{{ base_config_source_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+  tags: [base_config, localization]
+
+- name: Configure system locale
+  ansible.builtin.copy:
+    content: "LANG={{ base_config_locales[0] }}"
+    dest: "{{ base_config_source_dir }}/locale.conf"
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  tags: [base_config, localization]
+
+- name: Configure locale symlink
+  ansible.builtin.copy:
+    content: "L+ /etc/locale.conf - - - - {{ base_config_source_dir }}/locale.conf"
+    dest: /usr/lib/tmpfiles.d/locale.conf
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  tags: [base_config, localization]
+
+- name: Configure hostname file
+  ansible.builtin.copy:
+    content: "{{ inventory_hostname }}"
+    dest: /usr/local/share/config/hostname
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  tags: [base_config, hostname]
+
+- name: Configure hostname symlink
+  ansible.builtin.copy:
+    content: "L+ /etc/hostname - - - - {{ base_config_source_dir }}/hostname"
+    dest: /usr/lib/tmpfiles.d/hostname.conf
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  tags: [base_config, hostname]

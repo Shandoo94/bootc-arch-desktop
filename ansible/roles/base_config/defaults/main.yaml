@@ -1,0 +1,5 @@
+base_config_locales:
+  - en_US.UTF-8
+base_config_timezone: UTC
+
+base_config_source_dir: "/usr/local/share/config"
