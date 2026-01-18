@@ -53,3 +53,10 @@
       wallpaper_path: "{{ theme_config_source_dir }}/wp.jpg"
       kb_layout: "{{ theme_kb_layout }}"
       kb_variant: "{{ theme_kb_variant }}"
+      font:
+        style: "{{ theme_font_style }}"
+        size:
+          terminal: "{{ theme_font_size_terminal }}"
+          apps: "{{ theme_font_size_apps }}"
+          popups: "{{ theme_font_size_popups }}"
+          desktop: "{{ theme_font_size_desktop }}"
