@@ -12,4 +12,4 @@ user_creation_users:
   - name: tiwaz
     shell: zsh
     hashed_pw_file: /run/secrets/share/user_pw/tiwaz
-    extra_groups: ["podman"]
+    extra_groups: ["podman", "wheel"]
