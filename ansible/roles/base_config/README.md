@@ -24,15 +24,6 @@ This role uses the following variables:
 - `base_config_locales`: List of locales to enable (default: `['en_US.UTF-8']`)
 - `base_config_timezone`: Timezone to set (default: `UTC`)
 
-## Usage
-
-Add the role to your playbook:
-
-```yaml
-roles:
-  - base_config
-```
-
 ## Tags
 
 - `base_config`: Main tag for all base_config tasks
