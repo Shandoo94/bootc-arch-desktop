@@ -1,13 +1,8 @@
 - name: Configure system
   hosts: localhost
   connection: local
-  pre_tasks:
-    - name: Set container_hostname fact from /etc/hostname
-      ansible.builtin.set_fact:
-        container_hostname: "{{ lookup('ansible.builtin.file', '/etc/hostname') }}"
-      tags: [always]
-
   roles:
+    - base_config
     - secrets
     - theme
     - user_creation
