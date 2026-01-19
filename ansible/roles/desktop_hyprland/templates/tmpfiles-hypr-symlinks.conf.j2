@@ -1,0 +1,12 @@
+# Type Path                                  Mode User Group Age Argument
+{% for user in desktop_hypr_users %}
+L+ {{ user.home_dir }}/.config/hypr/hyprland.conf - - - - {{ desktop_hypr_source_dir }}/hyprland.conf
+L+ {{ user.home_dir }}/.config/hypr/hypridle.conf - - - - {{ desktop_hypr_source_dir }}/hypridle.conf
+L+ {{ user.home_dir }}/.config/hypr/hyprlock.conf - - - - {{ desktop_hypr_source_dir }}/hyprlock.conf
+L+ {{ user.home_dir }}/.config/waybar/config - - - - {{ desktop_hypr_source_dir }}/waybar-config
+L+ {{ user.home_dir }}/.config/waybar/style.css - - - - {{ desktop_hypr_source_dir }}/waybar-style.css
+L+ {{ user.home_dir }}/.config/dunst/dunstrc - - - - {{ desktop_hypr_source_dir }}/dunstrc
+L+ {{ user.home_dir }}/.config/rofi/config.rasi - - - - {{ desktop_hypr_source_dir }}/rofi-config.rasi
+L+ {{ user.home_dir }}/.config/yazi/yazi.toml - - - - {{ desktop_hypr_source_dir }}/yazi.toml
+L+ {{ user.home_dir }}/.config/yazi/theme.toml - - - - {{ desktop_hypr_source_dir }}/yazi-theme.toml
+{% endfor %}

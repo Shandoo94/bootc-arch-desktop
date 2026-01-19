@@ -1,6 +1,5 @@
 [
   {
-    "height": 20,
     "include": [
       "{{ desktop_hypr_source_dir }}/waybar-modules.jsonc",
       "{{ desktop_hypr_source_dir }}/waybar-modules-workspaces.jsonc",
@@ -8,6 +7,9 @@
       "{{ desktop_hypr_source_dir }}/waybar-modules-groups.jsonc"
     ],
     "layer": "top",
+    "position": "top",
+    "height": 20,
+    "spacing": 4
     "modules-center": [
       "custom/separator#blank_2",
       "hyprland/workspaces",
@@ -21,8 +23,6 @@
       "bluetooth",
       "custom/separator#line",
       "network",
-      "custom/separator#line",
-      "wlr/taskbar",
       "custom/separator#blank_2"
     ],
     "modules-right": [
@@ -41,7 +41,5 @@
       "clock",
       "custom/separator#line"
     ],
-    "position": "top",
-    "spacing": 4
   }
 ]

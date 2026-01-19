@@ -1,7 +1,7 @@
 - name: Install software
   community.general.pacman:
     name:
-      - hyprland
+      - hyprland # base desktop suite
       - hyprlock
       - hypridle
       - kitty
@@ -9,6 +9,9 @@
       - rofi
       - waybar
       - dunst
+      - swww # for wallpaper
+      - wlr-randr
+      - jq
       - ffmpeg # yazi optional dependencies
       - p7zip
       - jq
@@ -20,3 +23,60 @@
       - imagemagick
     state: present
   become: true
+  tags: [desktop_hyprland, packages]
+
+- name: Create config folder
+  ansible.builtin.file:
+    dest: "{{ desktop_hypr_source_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+  tags: [desktop_hyprland, config]
+
+- name: Copy file configurations
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "{{ desktop_hypr_source_dir }}/{{ item }}"
+    owner: root
+    group: root
+    mode: "0644"
+  loop:
+    - waybar-modules-custom.jsonc
+    - waybar-modules-groups.jsonc
+    - waybar-modules.jsonc
+    - waybar-modules-workspaces.jsonc
+  become: true
+  tags: [desktop_hyprland, config]
+
+- name: Render template configurations
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ desktop_hypr_source_dir }}/{{ item }}"
+    owner: root
+    group: root
+    mode: "0644"
+  loop:
+    - dunstrc
+    - hypridle.conf
+    - hyprland.conf
+    - hyprlock.conf
+    - rofi-config.rasi
+    - waybar-config
+    - waybar-style.css
+    - yazi-syntect.tmTheme
+    - yazi-theme.toml
+    - yazi.toml
+  become: true
+  tags: [desktop_hyprland, config]
+
+- name: Generate tmpfiles.d configuration for user symlinks
+  ansible.builtin.template:
+    src: tmpfiles-hypr-symlinks.conf.j2
+    dest: /usr/lib/tmpfiles.d/bootc-hypr-symlinks.conf
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  tags: [desktop_hyprland, tmpfiles, symlinks]
