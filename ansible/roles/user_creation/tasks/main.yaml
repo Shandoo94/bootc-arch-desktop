@@ -97,5 +97,5 @@
 
 - name: Set facts for created users
   ansible.builtin.set_fact:
-    user_creation_data: "{{ user_creation_data | default([]) + [{'name': item.name, 'home_dir': item.home_dir}] }}"
+    user_creation_data: "{{ [{'name': item.name, 'home_dir': '/var/home/' + item.name}] }}"
   loop: "{{ user_creation_users }}"
