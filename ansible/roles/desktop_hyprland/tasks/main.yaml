@@ -11,7 +11,6 @@
       - dunst
       - swww # for wallpaper
       - wlr-randr
-      - jq
       - ffmpeg # yazi optional dependencies
       - p7zip
       - jq
@@ -21,6 +20,10 @@
       - fzf
       - zoxide
       - imagemagick
+      - pipewire # other needed utils
+      - pipewire-jack
+      - pipewire-pulse
+      - pipewire-alsa
     state: present
   become: true
   tags: [desktop_hyprland, packages]
