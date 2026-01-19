@@ -2,7 +2,8 @@
   hosts: all
   connection: local
   roles:
+    - theme
     - base_config
     - secrets
-    - theme
     - user_creation
+    - desktop_hyprland
