@@ -1,0 +1,21 @@
+- name: Install software
+  community.general.pacman:
+    name:
+      - pipewire # Audio
+      - pipewire-jack
+      - pipewire-pulse
+      - pipewire-alsa
+      - wireplumber
+      - bluez # Bluetooth
+      - bluez-utils
+      - blueman
+      - udisks2 # Mount external drives
+  become: true
+  tags: [desktop_hardware, packages]
+
+- name: Enable bluetooth service
+  ansible.builtin.systemd_service:
+    name: bluetooth.service
+    enabled: true
+  become: true
+  tags: [desktop_hardware, bluetooth]
