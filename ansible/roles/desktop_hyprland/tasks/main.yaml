@@ -87,9 +87,9 @@
   become: true
   tags: [desktop_hyprland, tmpfiles, symlinks]
 
-- name: Enable polkit agent
+- name: Enable Greetd
   ansible.builtin.systemd_service:
-    name: hyprpolkitagent.service
+    name: greetd.service
     enabled: true
   become: true
   tags: [desktop_hyprland, systemd]
