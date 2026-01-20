@@ -9,8 +9,15 @@
       - rofi
       - waybar
       - dunst
+      - uwsm
+      - xdg-desktop-portal-hyprland # must havs
+      - hyprpolkitagent
+      - qt5-wayland
+      - qt6-wayland
       - swww # for wallpaper
       - wlr-randr
+      - greetd # Login screen
+      - greetd-tuigreet
       - ffmpeg # yazi optional dependencies
       - p7zip
       - jq
@@ -79,3 +86,10 @@
     mode: "0644"
   become: true
   tags: [desktop_hyprland, tmpfiles, symlinks]
+
+- name: Enable polkit agent
+  ansible.builtin.systemd_service:
+    name: hyprpolkitagent.service
+    enabled: true
+  become: true
+  tags: [desktop_hyprland, systemd]
