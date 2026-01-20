@@ -6,4 +6,5 @@
     - base_config
     - secrets
     - user_creation
+    - desktop_hardware
     - desktop_hyprland
