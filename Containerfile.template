@@ -10,6 +10,13 @@ rm -dr /tmp/ansible && \
 rm -dr /var/{roothome,cache,db,lib} && \
 pacman -Scc --noconfirm
 
+# Create user 'archie' with home directory and add to wheel group
+RUN set -euo pipefail && \
+useradd -m -G wheel -s /bin/bash archie && \
+echo "archie:archie" | chpasswd && \
+echo "%wheel ALL=(ALL:ALL) ALL" > /etc/sudoers.d/wheel && \
+echo "d /var/home/archie 0750 archie archie -" > "/usr/lib/tmpfiles.d/archie-home-dir.conf"
+
 # Stage 2: Final OS image
 FROM scratch
 COPY --from=builder / /
