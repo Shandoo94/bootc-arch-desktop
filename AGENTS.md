@@ -31,6 +31,16 @@ Placement of files, e.g. skripts, configurations and so on, should adhere to Lin
 - Set file permissions explicitly with `mode` parameter
 - Use `no_log: yes` for tasks handling sensitive data
 
+### Custom Config Files
+- Each role that writes custom configuration should define a `source_dir` variable
+- Place `source_dir` at `/usr/local/share/config/<role-name>` (e.g., `/usr/local/share/config/user-creation`)
+- Generate config files as Ansible templates deployed to `{{ source_dir }}/`
+- Scripts and binaries go in `/usr/local/bin/`
+- Systemd service units go in `/usr/lib/systemd/system/`
+- Systemd drop-in directories go in `/usr/lib/systemd/system/<service>.d/`
+- tmpfiles.d configs go in `/usr/lib/tmpfiles.d/`
+- sysusers.d configs go in `/usr/lib/sysusers.d/`
+
 ## Containerfile Guidelines
 
 Use the general best practices for writing Containerfiles.
