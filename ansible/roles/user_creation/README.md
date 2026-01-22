@@ -14,7 +14,6 @@ This role creates users with:
 ## Dependencies
 
 - `sops-secrets` role must run first (provides password hashes via SOPS)
-- `systemd-sysusers.service` runs after `sops-secrets.service` at boot
 
 ## Variables
 
@@ -32,6 +31,14 @@ List of users to create. Each user is a dict with:
 | `shell` | Yes | string | Login shell path (e.g., `/bin/bash`) |
 | `hashed_pw_file` | Yes | string | Path to decrypted password hash (from SOPS secrets) |
 | `extra_groups` | Yes | list | Additional groups to add user to |
+
+### `user_creation_script_path`
+
+Path to scripts directory (default: `"/usr/local/bin"`).
+
+### `user_creation_source_dir`
+
+Path to config directory for user data (default: `"/usr/local/share/config/user-creation"`).
 
 ## Example Configuration
 
@@ -66,13 +73,16 @@ The decrypted files will be available at the paths specified in `hashed_pw_file`
 |------|---------|
 | `/usr/lib/sysusers.d/bootc-users.conf` | User/group configuration |
 | `/usr/lib/tmpfiles.d/bootc-users-home.conf` | Home directory configuration |
-| `/etc/systemd/system/systemd-sysusers.service.d/bootc-credentials.conf` | Credential loading |
+| `/usr/local/share/config/user-creation/user-data.yaml` | User data for password script |
+| `/usr/local/bin/set-user-passwords.sh` | Password setting script |
+| `/usr/lib/systemd/system/bootc-user-passwords.service` | Password setting service |
 
 ## Boot Order
 
 1. `sops-secrets.service` - Decrypts secrets to `/run/secrets/`
-2. `systemd-sysusers.service` - Creates users with credentials from decrypted secrets
+2. `systemd-sysusers.service` - Creates users
 3. `systemd-tmpfiles.service` - Creates home directories
+4. `bootc-user-passwords.service` - Sets passwords from hashed credential files
 
 ## Idempotency
 

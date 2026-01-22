@@ -1,0 +1,5 @@
+---
+{% for user in user_creation_users %}
+- name: {{ user.name }}
+  hashed_pw_file: {{ user.hashed_pw_file }}
+{% endfor %}

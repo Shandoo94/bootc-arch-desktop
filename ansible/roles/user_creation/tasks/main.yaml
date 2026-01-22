@@ -35,6 +35,13 @@
   become: true
   tags: [user_creation, packages]
 
+- name: Install yq for password script
+  community.general.pacman:
+    name: yq
+    state: present
+  become: true
+  tags: [user_creation, packages]
+
 - name: Create sysusers.d directory
   ansible.builtin.file:
     path: /usr/lib/sysusers.d
@@ -85,15 +92,52 @@
   become: true
   tags: [user_creation, tmpfiles]
 
-- name: Generate systemd-sysusers credential drop-in
+- name: Create user creation config directory
+  ansible.builtin.file:
+    path: "{{ user_creation_source_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+  tags: [user_creation, passwords]
+
+- name: Generate user data YAML
   ansible.builtin.template:
-    src: credentials.conf.j2
-    dest: /usr/lib/systemd/system/systemd-sysusers.service.d/bootc-credentials.conf
+    src: user-data.yaml.j2
+    dest: "{{ user_creation_source_dir }}/user-data.yaml"
     owner: root
     group: root
     mode: "0644"
   become: true
-  tags: [user_creation, systemd, credentials]
+  tags: [user_creation, passwords]
+
+- name: Install password set script
+  ansible.builtin.template:
+    src: set-user-passwords.sh.j2
+    dest: "{{ user_creation_script_path }}/set-user-passwords.sh"
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+  tags: [user_creation, passwords]
+
+- name: Install bootc-user-passwords systemd service
+  ansible.builtin.template:
+    src: bootc-user-passwords.service.j2
+    dest: /usr/lib/systemd/system/bootc-user-passwords.service
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  tags: [user_creation, passwords, systemd]
+
+- name: Enable bootc-user-passwords service
+  ansible.builtin.systemd_service:
+    name: bootc-user-passwords.service
+    enabled: true
+  become: true
+  tags: [user_creation, passwords, systemd]
 
 - name: Set facts for created users
   ansible.builtin.set_fact:
