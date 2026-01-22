@@ -10,7 +10,7 @@
       - waybar
       - dunst
       - uwsm
-      - xdg-desktop-portal-hyprland # must havs
+      - xdg-desktop-portal-hyprland # must have's
       - hyprpolkitagent
       - qt5-wayland
       - qt6-wayland
