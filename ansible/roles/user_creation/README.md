@@ -28,7 +28,7 @@ List of users to create. Each user is a dict with:
 | Field | Required | Type | Description |
 |-------|----------|------|-------------|
 | `name` | Yes | string | Username |
-| `shell` | Yes | string | Login shell path (e.g., `/bin/bash`) |
+| `shell` | Yes | string | Login shell name (e.g., `bash`, `zsh`). Use shell name only, not full path. |
 | `hashed_pw_file` | Yes | string | Path to decrypted password hash (from SOPS secrets) |
 | `extra_groups` | Yes | list | Additional groups to add user to |
 
@@ -36,20 +36,16 @@ List of users to create. Each user is a dict with:
 
 Path to scripts directory (default: `"/usr/local/bin"`).
 
-### `user_creation_source_dir`
-
-Path to config directory for user data (default: `"/usr/local/share/config/user-creation"`).
-
 ## Example Configuration
 
 ```yaml
 user_creation_users:
   - name: alice
-    shell: /bin/bash
+    shell: bash
     hashed_pw_file: "/run/secrets/share/user_pw.alice"
     extra_groups: ["wheel", "docker"]
   - name: bob
-    shell: /usr/bin/zsh
+    shell: zsh
     hashed_pw_file: "/run/secrets/host/myhost/user_pw.bob"
     extra_groups: ["www-data"]
 ```
@@ -73,8 +69,7 @@ The decrypted files will be available at the paths specified in `hashed_pw_file`
 |------|---------|
 | `/usr/lib/sysusers.d/bootc-users.conf` | User/group configuration |
 | `/usr/lib/tmpfiles.d/bootc-users-home.conf` | Home directory configuration |
-| `/usr/local/share/config/user-creation/user-data.yaml` | User data for password script |
-| `/usr/local/bin/set-user-passwords.sh` | Password setting script |
+| `/usr/local/bin/set-user-passwords.sh` | Generated password setting script (hardcoded per user) |
 | `/usr/lib/systemd/system/bootc-user-passwords.service` | Password setting service |
 
 ## Boot Order

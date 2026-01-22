@@ -35,13 +35,6 @@
   become: true
   tags: [user_creation, packages]
 
-- name: Install yq for password script
-  community.general.pacman:
-    name: yq
-    state: present
-  become: true
-  tags: [user_creation, packages]
-
 - name: Create sysusers.d directory
   ansible.builtin.file:
     path: /usr/lib/sysusers.d
@@ -91,26 +84,6 @@
     mode: "0644"
   become: true
   tags: [user_creation, tmpfiles]
-
-- name: Create user creation config directory
-  ansible.builtin.file:
-    path: "{{ user_creation_source_dir }}"
-    state: directory
-    owner: root
-    group: root
-    mode: "0755"
-  become: true
-  tags: [user_creation, passwords]
-
-- name: Generate user data YAML
-  ansible.builtin.template:
-    src: user-data.yaml.j2
-    dest: "{{ user_creation_source_dir }}/user-data.yaml"
-    owner: root
-    group: root
-    mode: "0644"
-  become: true
-  tags: [user_creation, passwords]
 
 - name: Install password set script
   ansible.builtin.template:

@@ -1,4 +1,3 @@
 user_creation_home_dir: "/var/home"
 user_creation_users: []
 user_creation_script_path: "/usr/local/bin"
-user_creation_source_dir: "/usr/local/share/config/user-creation"
