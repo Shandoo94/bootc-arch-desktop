@@ -25,11 +25,14 @@
   become: true
   tags: [desktop_hyprland, packages]
 
-- name: Install Hyprland ecosystem
+- name: Install Hyprland utils
   community.general.pacman:
     name:
       - hyprcursor
       - hyprpwcenter
+      - wl-clipboard
+      - brightnessctl
+      - playerctl
     state: present
   become: true
   tags: [desktop_hyprland, packages]
