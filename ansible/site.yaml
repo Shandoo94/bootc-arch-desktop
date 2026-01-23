@@ -2,7 +2,6 @@
   hosts: all
   connection: local
   roles:
-    - theme
     - base_config
     - secrets
     - user_creation

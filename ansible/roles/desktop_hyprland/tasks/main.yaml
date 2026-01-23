@@ -1,7 +1,7 @@
-- name: Install software
+- name: Install Hyprland desktop suite
   community.general.pacman:
     name:
-      - hyprland # base desktop suite
+      - hyprland
       - hyprlock
       - hypridle
       - kitty
@@ -10,15 +10,44 @@
       - waybar
       - dunst
       - uwsm
-      - xdg-desktop-portal-hyprland # must have's
+    state: present
+  become: true
+  tags: [desktop_hyprland, packages]
+
+- name: Install Hyprland must haves
+  community.general.pacman:
+    name:
+      - xdg-desktop-portal-hyprland
       - hyprpolkitagent
       - qt5-wayland
       - qt6-wayland
-      - swww # for wallpaper
+    state: present
+  become: true
+  tags: [desktop_hyprland, packages]
+
+- name: Install wallpaper utilities
+  community.general.pacman:
+    name:
+      - swww
       - wlr-randr
-      - greetd # Login screen
+      - jq
+    state: present
+  become: true
+  tags: [desktop_hyprland, packages]
+
+- name: Install Greetd login manager
+  community.general.pacman:
+    name:
+      - greetd
       - greetd-tuigreet
-      - ffmpeg # yazi optional dependencies
+    state: present
+  become: true
+  tags: [desktop_hyprland, packages, greetd]
+
+- name: Install optional yazi file manager dependencies
+  community.general.pacman:
+    name:
+      - ffmpeg
       - p7zip
       - jq
       - poppler
@@ -41,60 +70,13 @@
   become: true
   tags: [desktop_hyprland, config]
 
-- name: Copy file configurations
+- name: Copy greetd configuration
   ansible.builtin.copy:
-    src: "{{ item }}"
-    dest: "{{ desktop_hypr_source_dir }}/{{ item }}"
+    src: greetd-config.toml
+    dest: "{{ desktop_hypr_source_dir }}/greetd-config.toml"
     owner: root
     group: root
     mode: "0644"
-  loop:
-    - greetd-config.toml
-    - waybar-modules-custom.jsonc
-    - waybar-modules-groups.jsonc
-    - waybar-modules.jsonc
-    - waybar-modules-workspaces.jsonc
-  become: true
-  tags: [desktop_hyprland, config]
-
-- name: Render template configurations
-  ansible.builtin.template:
-    src: "{{ item }}.j2"
-    dest: "{{ desktop_hypr_source_dir }}/{{ item }}"
-    owner: root
-    group: root
-    mode: "0644"
-  loop:
-    - dunstrc
-    - hypridle.conf
-    - hyprland.conf
-    - hyprlock.conf
-    - rofi-config.rasi
-    - waybar-config
-    - waybar-style.css
-    - yazi-syntect.tmTheme
-    - yazi-theme.toml
-    - yazi.toml
-  become: true
-  tags: [desktop_hyprland, config]
-
-- name: Generate tmpfiles.d configuration for user symlinks
-  ansible.builtin.template:
-    src: tmpfiles-hypr-symlinks.conf.j2
-    dest: /usr/lib/tmpfiles.d/bootc-hypr-symlinks.conf
-    owner: root
-    group: root
-    mode: "0644"
-  become: true
-  tags: [desktop_hyprland, tmpfiles, symlinks]
-
-- name: Create greetd config directory
-  ansible.builtin.file:
-    dest: /etc/greetd
-    state: directory
-    owner: root
-    group: root
-    mode: "0755"
   become: true
   tags: [desktop_hyprland, config, greetd]
 

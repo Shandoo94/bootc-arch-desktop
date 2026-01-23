@@ -1,8 +1,1 @@
 desktop_hypr_source_dir: "/usr/local/share/config/hypr"
-
-desktop_hypr_users: "{{ user_creation_data | default([]) }}"
-
-# Time in seconds
-desktop_hypr_screen_lock_timeout: 180
-desktop_hypr_screen_off_timeout: 240
-desktop_hypr_suspend_timeout: 540

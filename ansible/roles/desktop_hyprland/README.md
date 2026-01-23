@@ -1,8 +1,8 @@
 # Desktop Environment: Hyprland
 
-Sets up Hyprland as desktop environment.
+Installs Hyprland desktop environment packages and configures the system-level Greetd login manager.
 
-## Components
+## Packages Installed
 
 | Component | Description |
 |-----------|-------------|
@@ -14,24 +14,28 @@ Sets up Hyprland as desktop environment.
 | hyprlock | Screen locker |
 | hypridle | Idle daemon |
 | kitty | Terminal emulator |
+| greetd / greetd-tuigreet | Login manager |
 
-## Configuration
+Plus additional utilities: uwsm, xdg-desktop-portal-hyprland, hyprpolkitagent, qt5-wayland, qt6-wayland, swww, wlr-randr, ffmpeg, p7zip, jq, poppler, fd, ripgrep, fzf, zoxide, imagemagick.
 
-Configuration files are installed to `{{ desktop_hypr_source_dir }}` and symlinked to each user's home directory via systemd-tmpfiles.
+## System Configuration
+
+The role configures Greetd by:
+1. Deploying `/usr/local/share/config/hypr/greetd-config.toml`
+2. Creating a symlink from `/etc/greetd/config.toml` to the deployed config via systemd-tmpfiles
+3. Enabling the greetd.service
 
 ## Variables
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `desktop_hypr_source_dir` | Source directory for configs | `/usr/local/share/config/hypr` |
-| `desktop_hypr_users` | List of users for symlinks | `user_creation_data` |
-| `desktop_hypr_screen_lock_timeout` | Screen lock timeout (seconds) | `180` |
-| `desktop_hypr_screen_off_timeout` | Screen off timeout (seconds) | `240` |
-| `desktop_hypr_suspend_timeout` | Suspend timeout (seconds) | `540` |
+| `desktop_hypr_source_dir` | Source directory for greetd config | `/usr/local/share/config/hypr` |
 
 ## Tags
 
 - `desktop_hyprland` - General role tasks
 - `desktop_hyprland:packages` - Package installation
 - `desktop_hyprland:config` - Configuration file management
+- `desktop_hyprland:greetd` - Greetd-specific tasks
 - `desktop_hyprland:tmpfiles` - Tmpfiles and symlink generation
+- `desktop_hyprland:systemd` - Systemd service management

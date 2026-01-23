@@ -1,6 +1,3 @@
-theme_config:
-  name: uwunicorn
-
 secrets_paths:
   global:
     user_pw:
