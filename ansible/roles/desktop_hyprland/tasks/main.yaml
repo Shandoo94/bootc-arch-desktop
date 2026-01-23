@@ -25,10 +25,19 @@
   become: true
   tags: [desktop_hyprland, packages]
 
+- name: Install Hyprland ecosystem
+  community.general.pacman:
+    name:
+      - hyprcursor
+      - hyprpwcenter
+    state: present
+  become: true
+  tags: [desktop_hyprland, packages]
+
 - name: Install wallpaper utilities
   community.general.pacman:
     name:
-      - swww
+      - hyprpaper
       - wlr-randr
       - jq
     state: present
