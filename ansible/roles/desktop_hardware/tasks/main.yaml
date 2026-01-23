@@ -1,15 +1,20 @@
-- name: Install software
+- name: Install audio software
   community.general.pacman:
     name:
-      - pipewire # Audio
+      - pipewire
       - pipewire-jack
       - pipewire-pulse
       - pipewire-alsa
       - wireplumber
-      - bluez # Bluetooth
+  become: true
+  tags: [desktop_hardware, packages]
+
+- name: Install bluetooth software
+  community.general.pacman:
+    name:
+      - bluez
       - bluez-utils
       - blueman
-      - udisks2 # Mount external drives
   become: true
   tags: [desktop_hardware, packages]
 
@@ -19,3 +24,10 @@
     enabled: true
   become: true
   tags: [desktop_hardware, bluetooth]
+
+- name: Install drive software
+  community.general.pacman:
+    name:
+      - udisks2
+  become: true
+  tags: [desktop_hardware, packages]
