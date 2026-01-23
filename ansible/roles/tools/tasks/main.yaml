@@ -5,7 +5,6 @@
       - nvim
       - lazygit
       - trash-cli
-      - udisks2
   become: true
   tags: [tools, packages]
 
