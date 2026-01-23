@@ -7,7 +7,7 @@ RUN pacman -Sy --noconfirm ansible python-jmespath && \
 ansible-playbook -i /tmp/ansible/inventory/inventory.yaml /tmp/ansible/site.yaml --limit "atlas" && \
 pacman -Rns ansible python-jmespath --noconfirm && \
 rm -dr /tmp/ansible && \
-rm -dr /var/{roothome,cache,db,lib} && \
+rm -dr /var/{roothome,cache,db,lib,log} && \
 pacman -Scc --noconfirm
 
 # Create user 'archie' with home directory and add to wheel group

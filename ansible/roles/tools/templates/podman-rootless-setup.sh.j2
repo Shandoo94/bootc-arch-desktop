@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+log_info() {
+    echo "[INFO] $1" | systemd-cat -t podman-rootless-setup -p info
+}
+
+log_error() {
+    echo "[ERROR] $1" | systemd-cat -t podman-rootless-setup -p err
+}
+
+log_info "Starting podman rootless setup for {{ user_creation_users | length }} user(s)"
+
+{% for user in user_creation_users %}
+# Configure subuid/subgid for user: {{ user.name }}
+if id {{ user.name }} >/dev/null 2>&1; then
+    # Add subuid range for {{ user.name }}
+    if usermod --add-subuids 100000-165535 {{ user.name }} 2>/dev/null; then
+        log_info "Successfully configured subuids for user '{{ user.name }}'"
+    else
+        log_error "Failed to configure subuids for user '{{ user.name }}'"
+    fi
+    
+    # Add subgid range for {{ user.name }}
+    if usermod --add-subgids 100000-165535 {{ user.name }} 2>/dev/null; then
+        log_info "Successfully configured subgids for user '{{ user.name }}'"
+    else
+        log_error "Failed to configure subgids for user '{{ user.name }}'"
+    fi
+else
+    log_error "User '{{ user.name }}' does not exist"
+fi
+{% endfor %}
+
+log_info "Podman rootless setup complete"
+exit 0
