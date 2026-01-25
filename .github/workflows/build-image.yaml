@@ -28,7 +28,7 @@ jobs:
       - name: Check Disk Usage
         run: |
           df -h /
-          du -sh /* 2>/dev/null | sort -hr | head -10
+          du -sh /var/lib/containers 2>/dev/null || echo "/var/lib/containers not found"
           uname -m  # Bonus: Confirms x64 vs. aarch64
 
       - name: Generate build version
@@ -70,7 +70,7 @@ jobs:
           containerfiles: |
             ./Containerfile
           oci: true
-          layers: true
+          layers: false
           extra-args: |
             --pull-always
 
