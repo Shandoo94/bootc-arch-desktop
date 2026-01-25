@@ -3,6 +3,7 @@
   connection: local
   roles:
     - base_config
+    - ssh
     - secrets
     - user_creation
     - desktop_hardware
