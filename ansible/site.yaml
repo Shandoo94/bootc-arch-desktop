@@ -3,11 +3,11 @@
   connection: local
   roles:
     - base_config
-    - ssh
-    - secrets
-    - user_creation
     - hardware
     - hyprland
     - network
-    - virt
+    - secrets
+    - ssh
     - tools
+    - user_creation
+    - virt
