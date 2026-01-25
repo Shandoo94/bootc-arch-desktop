@@ -6,6 +6,7 @@
     - ssh
     - secrets
     - user_creation
-    - desktop_hardware
-    - desktop_hyprland
+    - hardware
+    - hyprland
+    - network
     - tools
