@@ -53,7 +53,6 @@
       - podman
       - crun
       - distrobox
-      - toolbox
       - libvirt
       - qemu-full
       - virt-manager
