@@ -5,15 +5,12 @@
       - git-lfs
       - nvim
       - lazygit
-      - trash-cli
       - eza
-      - bat
       - jq
       - yq
       - zoxide
       - fzf
       - imagemagick
-      - curl
   become: true
   tags: [tools, packages]
 
