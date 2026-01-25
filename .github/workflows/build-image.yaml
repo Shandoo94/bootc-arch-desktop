@@ -25,6 +25,12 @@ jobs:
       - name: Delete huge unnecessary tools folder
         run: rm -rf /opt/hostedtoolcache
 
+      - name: Check Disk Usage
+        run: |
+          df -h /
+          du -sh /* 2>/dev/null | sort -hr | head -10
+          uname -m  # Bonus: Confirms x64 vs. aarch64
+
       - name: Generate build version
         id: version
         run: |
