@@ -12,7 +12,7 @@
       - yq
       - zoxide
       - fzf
-      - imagemagic
+      - imagemagick
       - curl
   become: true
   tags: [tools, packages]
@@ -25,42 +25,3 @@
       - nvtop
   become: true
   tags: [tools, packages]
-
-- name: Install virt utils
-  community.general.pacman:
-    name:
-      - podman
-      - crun
-      - distrobox
-      - libvirt
-      - qemu-full
-      - virt-manager
-  become: true
-  tags: [tools, packages]
-
-- name: Install podman rootless setup script
-  ansible.builtin.template:
-    src: podman-rootless-setup.sh.j2
-    dest: "{{ tools_script_path }}/podman-rootless-setID.sh"
-    owner: root
-    group: root
-    mode: "0755"
-  become: true
-  tags: [tools, podman]
-
-- name: Install podman rootless systemd service
-  ansible.builtin.template:
-    src: podman-rootless.service.j2
-    dest: /usr/lib/systemd/system/podman-rootless.service
-    owner: root
-    group: root
-    mode: "0644"
-  become: true
-  tags: [tools, podman, systemd]
-
-- name: Enable podman rootless service
-  ansible.builtin.systemd_service:
-    name: podman-rootless.service
-    enabled: true
-  become: true
-  tags: [tools, podman, systemd]
