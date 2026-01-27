@@ -30,15 +30,12 @@ jobs:
           df -h /
           uname -m  # Bonus: Confirms x64 vs. aarch64
 
-      - name: Generate build info
+      - name: Generate build version
         id: version
         run: |
           BUILD_DATE=$(date +%Y%m%d)
           BUILD_NUMBER=${{ github.run_number }}
-          HOSTNAMES=$(cat ansible/inventory/inventory.yaml | yq --raw-output '.all.hosts | keys[]' | tr '\n' ' ' | sed 's/ $//')
-          echo "date=$BUILD_DATE" >> "$GITHUB_OUTPUT"
-          echo "number=$BUILD_NUMBER" >> "$GITHUB_OUTPUT"
-          echo "hostnames=$HOSTNAMES" >> "$GITHUB_OUTPUT"
+          echo "version=${BUILD_DATE}.${BUILD_NUMBER}" >> "$GITHUB_OUTPUT"
           OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           echo "namespace=$OWNER" >> "$GITHUB_OUTPUT"
 
@@ -48,18 +45,12 @@ jobs:
           BASE_IMAGE_REF=$(head -n1 base-image.lock | tr -d '[:space:]')
           echo "ref=$BASE_IMAGE_REF" >> "$GITHUB_OUTPUT"
 
-      - name: Generate Containerfiles
+      - name: Generate Containerfile
         run: |
-          HOSTNAMES=${{ steps.base-image.outputs.hostnames }}
-          BUILD_DATE="${{ steps.version.outputs.date }}"
-          BUILD_NUMBER="${{ steps.version.outputs.number }}"
-          GIT_SHA="${{ github.sha }}"
-          BASE_IMAGE_REF="${{ steps.base-image.outputs.ref }}"
-          for host in $HOSTNAMES; do
-            echo "Generating Containerfile for host: $host"
-            ./scripts/make-containerfile.sh "$host"
-          done
-          echo "Containerfiles generated for all hosts"
+          BUILD_VERSION="${{ steps.version.outputs.version }}" \
+          GIT_SHA="${{ github.sha }}" \
+          BASE_IMAGE_REF="${{ steps.base-image.outputs.ref }}" \
+          ./scripts/make-containerfile.sh
 
       - name: Scan repo for secrets
         uses: aquasecurity/trivy-action@0.33.1
@@ -68,14 +59,6 @@ jobs:
           scan-ref: "."
           scanners: "secret"
           exit-code: "1"
-
-      - name: Log in to GHCR
-        if: inputs.push
-        uses: redhat-actions/podman-login@v1
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build image
         id: build-image
@@ -89,6 +72,14 @@ jobs:
           layers: false
           extra-args: |
             --pull-always
+
+      - name: Log in to GHCR
+        if: inputs.push
+        uses: redhat-actions/podman-login@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push to GHCR
         if: inputs.push
