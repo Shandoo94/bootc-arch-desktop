@@ -80,23 +80,3 @@
     mode: "0644"
   become: true
   tags: [base_config, localization]
-
-- name: Configure hostname file
-  ansible.builtin.copy:
-    content: "{{ inventory_hostname }}"
-    dest: /usr/local/share/config/hostname
-    owner: root
-    group: root
-    mode: "0644"
-  become: true
-  tags: [base_config, hostname]
-
-- name: Configure hostname symlink
-  ansible.builtin.copy:
-    content: "L+ /etc/hostname - - - - {{ base_config_source_dir }}/hostname"
-    dest: /usr/lib/tmpfiles.d/hostname.conf
-    owner: root
-    group: root
-    mode: "0644"
-  become: true
-  tags: [base_config, hostname]
