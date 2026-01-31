@@ -14,7 +14,7 @@
   become: true
   tags: [desktop_hyprland, packages]
 
-- name: Install Hyprland must haves
+- name: Install Hyprland essentials
   community.general.pacman:
     name:
       - xdg-desktop-portal-hyprland
