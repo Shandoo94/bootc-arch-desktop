@@ -1,4 +1,0 @@
-all:
-  hosts:
-    atlas:
-      ansible_host: localhost
