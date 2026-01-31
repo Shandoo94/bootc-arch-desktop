@@ -17,9 +17,9 @@ COPY --from=builder / /
 # Final sanity check
 RUN bootc container lint
 
-LABEL org.opencontainers.image.title="Arch Linux Bootc Desktop"
-LABEL org.opencontainers.image.description="Bootc-compatible image built on Arch Linux"
-LABEL org.opencontainers.image.version="TEMPLATE_VERSION"
-LABEL org.opencontainers.image.revision="TEMPLATE_REVISION"
-LABEL org.opencontainers.image.created="TEMPLATE_CREATED"
-LABEL org.opencontainers.image.source="https://github.com/Shandoo94/bootc-arch-desktop"
+LABEL org.opencontainers.image.title "Arch Linux Bootc Desktop"
+LABEL org.opencontainers.image.description "Bootc-compatible image built on Arch Linux"
+LABEL org.opencontainers.image.version "TEMPLATE_VERSION"
+LABEL org.opencontainers.image.revision "TEMPLATE_REVISION"
+LABEL org.opencontainers.image.created "TEMPLATE_CREATED"
+LABEL org.opencontainers.image.source "https://github.com/Shandoo94/bootc-arch-desktop"
