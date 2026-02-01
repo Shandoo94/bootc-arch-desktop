@@ -4,6 +4,7 @@
       - podman
       - crun
       - distrobox
+      - lazydocker
       - libvirt
       - qemu-full
       - virt-manager
