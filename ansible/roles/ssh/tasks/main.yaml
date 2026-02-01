@@ -25,19 +25,17 @@
 
 - name: Copy file configurations
   ansible.builtin.copy:
-    src: "{{ item }}"
-    dest: "{{ ssh_source_dir }}/{{ item }}"
+    src: 20-ssh-base.conf
+    dest: "{{ ssh_source_dir }}/20-ssh-base.conf"
     owner: root
     group: root
     mode: "0644"
-  loop:
-    - 20-force_pubkey_auth.conf
   tags: [ssh, config]
 
 - name: Configure ssh config symlink
   ansible.builtin.copy:
-    content: "L+ /etc/ssh/sshd_config.d/20-force_publickey_auth.conf - - - - {{ ssh_source_dir }}/20-force_pubkey_auth.conf"
-    dest: /usr/lib/tmpfiles.d/ssh_pubkey_auth.conf
+    content: "L+ /etc/ssh/sshd_config.d/20-ssh-base.conf - - - - {{ ssh_source_dir }}/20-ssh-base.conf"
+    dest: /usr/lib/tmpfiles.d/ssh-base.conf
     owner: root
     group: root
     mode: "0644"
