@@ -1,0 +1,13 @@
+[Unit]
+Description=Set hostname from kernel cmdline
+DefaultDependencies=no
+After=systemd-remount-fs.service
+Before=systemd-hostnamed.service
+
+[Service]
+Type=oneshot
+ExecStart={{ base_config_script_dir }}/set-hostname-from-cmdline.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=sysinit.target
