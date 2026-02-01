@@ -6,7 +6,7 @@ Before=systemd-hostnamed.service
 
 [Service]
 Type=oneshot
-ExecStart={{ base_config_script_dir }}/set-hostname-from-cmdline.sh
+ExecStart={{ base_config_hostname_script_path }}
 RemainAfterExit=yes
 
 [Install]

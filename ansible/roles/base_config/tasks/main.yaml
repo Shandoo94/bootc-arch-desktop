@@ -93,11 +93,18 @@
 
 - name: Install hostname service
   ansible.builtin.template:
-    src: set-hostname-from-cmdline.service.j2
-    dest: "/usr/lib/systemd/system/set-hostname-from-cmdline.service"
+    src: set-hostname-cmd.service.j2
+    dest: "/usr/lib/systemd/system/set-hostname-cmd.service"
     owner: root
     group: root
     mode: "0644"
+  become: true
+  tags: [base_config, systemd]
+
+- name: Enable hostname service
+  ansible.builtin.systemd_service:
+    name: set-hostname-cmd.service
+    enabled: true
   become: true
   tags: [base_config, systemd]
 
@@ -112,9 +119,9 @@
   tags: [base_config, hostname]
 
 - name: Install hostname script
-  ansible.builtin.template:
-    src: set-hostname-from-cmdline.sh
-    dest: "{{ base_config_script_dir }}/set-hostname-from-cmdline.sh"
+  ansible.builtin.copy:
+    src: set-hostname-cmd.sh
+    dest: "{{ base_config_hostname_script_path }}"
     owner: root
     group: root
     mode: "0755"
