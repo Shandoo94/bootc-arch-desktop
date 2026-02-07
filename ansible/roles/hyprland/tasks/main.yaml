@@ -47,15 +47,6 @@
   become: true
   tags: [hyprland, packages]
 
-- name: Install Greetd login manager
-  community.general.pacman:
-    name:
-      - greetd
-      - greetd-tuigreet
-    state: present
-  become: true
-  tags: [hyprland, packages, greetd]
-
 - name: Install optional yazi file manager dependencies
   community.general.pacman:
     name:
@@ -82,16 +73,6 @@
   become: true
   tags: [hyprland, config]
 
-- name: Copy greetd configuration
-  ansible.builtin.copy:
-    src: greetd-config.toml
-    dest: "{{ hyprland_source_dir }}/greetd-config.toml"
-    owner: root
-    group: root
-    mode: "0644"
-  become: true
-  tags: [hyprland, config, greetd]
-
 - name: Generate tmpfiles.d configuration for greetd symlink
   ansible.builtin.template:
     src: tmpfiles-greetd-symlinks.conf.j2
@@ -101,10 +82,3 @@
     mode: "0644"
   become: true
   tags: [hyprland, tmpfiles, symlinks, greetd]
-
-- name: Enable Greetd
-  ansible.builtin.systemd_service:
-    name: greetd.service
-    enabled: true
-  become: true
-  tags: [hyprland, systemd]

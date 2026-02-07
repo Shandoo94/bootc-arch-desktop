@@ -1,0 +1,35 @@
+- name: Install Greetd login manager
+  community.general.pacman:
+    name:
+      - greetd
+      - greetd-tuigreet
+    state: present
+  become: true
+  tags: [greetd, packages]
+
+- name: Create config folder
+  ansible.builtin.file:
+    dest: "{{ hyprland_source_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+  tags: [greetd, config]
+
+- name: Copy greetd configuration
+  ansible.builtin.copy:
+    src: greetd-config.toml
+    dest: "{{ hyprland_source_dir }}/greetd-config.toml"
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  tags: [greetd, config]
+
+- name: Enable Greetd
+  ansible.builtin.systemd_service:
+    name: greetd.service
+    enabled: true
+  become: true
+  tags: [greetd, systemd]
