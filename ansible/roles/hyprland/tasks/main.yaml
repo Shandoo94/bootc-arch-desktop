@@ -62,23 +62,3 @@
     state: present
   become: true
   tags: [hyprland, packages]
-
-- name: Create config folder
-  ansible.builtin.file:
-    dest: "{{ hyprland_source_dir }}"
-    state: directory
-    owner: root
-    group: root
-    mode: "0755"
-  become: true
-  tags: [hyprland, config]
-
-- name: Generate tmpfiles.d configuration for greetd symlink
-  ansible.builtin.template:
-    src: tmpfiles-greetd-symlinks.conf.j2
-    dest: /usr/lib/tmpfiles.d/bootc-greetd-symlinks.conf
-    owner: root
-    group: root
-    mode: "0644"
-  become: true
-  tags: [hyprland, tmpfiles, symlinks, greetd]

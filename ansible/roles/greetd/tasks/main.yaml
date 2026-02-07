@@ -27,6 +27,16 @@
   become: true
   tags: [greetd, config]
 
+- name: Generate tmpfiles.d configuration for greetd symlink
+  ansible.builtin.template:
+    src: tmpfiles-greetd-symlinks.conf.j2
+    dest: /usr/lib/tmpfiles.d/greetd-symlinks.conf
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  tags: [hyprland, tmpfiles, symlinks, greetd]
+
 - name: Enable Greetd
   ansible.builtin.systemd_service:
     name: greetd.service
