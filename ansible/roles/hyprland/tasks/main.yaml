@@ -12,7 +12,7 @@
       - uwsm
     state: present
   become: true
-  tags: [desktop_hyprland, packages]
+  tags: [hyprland, packages]
 
 - name: Install Hyprland essentials
   community.general.pacman:
@@ -23,7 +23,7 @@
       - qt6-wayland
     state: present
   become: true
-  tags: [desktop_hyprland, packages]
+  tags: [hyprland, packages]
 
 - name: Install Hyprland utils
   community.general.pacman:
@@ -35,7 +35,7 @@
       - playerctl
     state: present
   become: true
-  tags: [desktop_hyprland, packages]
+  tags: [hyprland, packages]
 
 - name: Install wallpaper utilities
   community.general.pacman:
@@ -45,7 +45,7 @@
       - jq
     state: present
   become: true
-  tags: [desktop_hyprland, packages]
+  tags: [hyprland, packages]
 
 - name: Install Greetd login manager
   community.general.pacman:
@@ -54,7 +54,7 @@
       - greetd-tuigreet
     state: present
   become: true
-  tags: [desktop_hyprland, packages, greetd]
+  tags: [hyprland, packages, greetd]
 
 - name: Install optional yazi file manager dependencies
   community.general.pacman:
@@ -70,7 +70,7 @@
       - imagemagick
     state: present
   become: true
-  tags: [desktop_hyprland, packages]
+  tags: [hyprland, packages]
 
 - name: Create config folder
   ansible.builtin.file:
@@ -80,7 +80,7 @@
     group: root
     mode: "0755"
   become: true
-  tags: [desktop_hyprland, config]
+  tags: [hyprland, config]
 
 - name: Copy greetd configuration
   ansible.builtin.copy:
@@ -90,7 +90,7 @@
     group: root
     mode: "0644"
   become: true
-  tags: [desktop_hyprland, config, greetd]
+  tags: [hyprland, config, greetd]
 
 - name: Generate tmpfiles.d configuration for greetd symlink
   ansible.builtin.template:
@@ -100,11 +100,11 @@
     group: root
     mode: "0644"
   become: true
-  tags: [desktop_hyprland, tmpfiles, symlinks, greetd]
+  tags: [hyprland, tmpfiles, symlinks, greetd]
 
 - name: Enable Greetd
   ansible.builtin.systemd_service:
     name: greetd.service
     enabled: true
   become: true
-  tags: [desktop_hyprland, systemd]
+  tags: [hyprland, systemd]
