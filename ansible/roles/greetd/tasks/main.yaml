@@ -9,7 +9,7 @@
 
 - name: Create config folder
   ansible.builtin.file:
-    dest: "{{ hyprland_source_dir }}"
+    dest: "{{ greetd_source_dir }}"
     state: directory
     owner: root
     group: root
@@ -20,7 +20,7 @@
 - name: Copy greetd configuration
   ansible.builtin.copy:
     src: greetd-config.toml
-    dest: "{{ hyprland_source_dir }}/greetd-config.toml"
+    dest: "{{ greetd_source_dir }}/greetd-config.toml"
     owner: root
     group: root
     mode: "0644"
