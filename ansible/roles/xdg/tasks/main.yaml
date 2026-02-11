@@ -1,0 +1,26 @@
+- name: Install xdg package
+  community.general.pacman:
+    name:
+      - xdg-user-dirs
+  become: true
+  tags: [xdg, packages]
+
+- name: Create config folder
+  ansible.builtin.file:
+    dest: "{{ xdg_source_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+  tags: [greetd, config]
+
+- name: Configure config symlink
+  ansible.builtin.copy:
+    content: "L+ /etc/xdg/user-dirs.defaults - - - - {{ xdg_source_dir }}/user-dirs.defaults"
+    dest: /usr/lib/tmpfiles.d/xdg-user-dirs.conf
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  tags: [base_config, localization]
