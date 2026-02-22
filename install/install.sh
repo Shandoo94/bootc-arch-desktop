@@ -35,12 +35,6 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
-# Verify bootc is available
-if ! command -v bootc &> /dev/null; then
-    echo "Error: bootc command not found. Please install bootc first."
-    exit 1
-fi
-
 echo "=========================================="
 echo "bootc Installation Script"
 echo "=========================================="
@@ -60,7 +54,7 @@ fi
 echo ""
 echo "==> Step 1/3: Install tools..."
 echo ""
-pacman -Sy podman ostree --noconfirm
+pacman -Sy podman crun ostree --noconfirm
 
 # Run disk setup
 echo ""
