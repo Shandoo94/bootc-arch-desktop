@@ -60,6 +60,10 @@ mkdir -p /var/lib/containers
 
 # Mount a 4GB RAM disk directly to Podman's storage directory
 mount -t tmpfs -o size=4G tmpfs /var/lib/containers
+mkdir -p /var/lib/containers/tmp
+export TMPDIR=/var/lib/containers/tmp
+export STORAGE_DRIVER=overlay
+export STORAGE_OPTS="mount_program=/usr/bin/fuse-overlayfs"
 
 # Run disk setup
 echo ""
@@ -82,7 +86,7 @@ echo ""
 echo "==> Step 3/3: Installing bootc image..."
 echo ""
 
-podman --storage-driver overlay --storage-opt=mount_program=/usr/bin/fuse-overlayfs pull "$BOOTC_IMAGE"
+podman pull "$BOOTC_IMAGE"
 podman run --rm --privileged --pid=host -it \
     -v /dev:/dev \
     -v /:/target \
