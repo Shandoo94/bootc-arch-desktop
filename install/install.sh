@@ -54,7 +54,7 @@ fi
 echo ""
 echo "==> Step 1/3: Install tools..."
 echo ""
-pacman -Sy podman crun ostree --noconfirm
+pacman -Sy --overwrite "*" podman crun fuse-overlayfs --noconfirm
 
 # Run disk setup
 echo ""
@@ -77,7 +77,7 @@ echo ""
 echo "==> Step 3/3: Installing bootc image..."
 echo ""
 
-podman pull "$BOOTC_IMAGE"
+podman --storage-driver overlay --storage-opt=mount_program=/usr/bin/fuse-overlayfs pull "$BOOTC_IMAGE"
 podman run --rm --privileged --pid=host -it \
     -v /dev:/dev \
     -v /:/target \
