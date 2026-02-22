@@ -1,5 +1,8 @@
 # Arch Bootc Desktop
 
+A small project to build a bootc-based arch desktop installation.
+Still in beta.
+
 ## Quick Start
 
 ### Build the base image
