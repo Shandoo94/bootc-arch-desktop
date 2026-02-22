@@ -55,6 +55,11 @@ echo ""
 echo "==> Step 1/3: Install tools..."
 echo ""
 pacman -Sy --overwrite "*" podman crun fuse-overlayfs --noconfirm
+rm -rf /var/lib/containers/storage
+mkdir -p /var/lib/containers
+
+# Mount a 4GB RAM disk directly to Podman's storage directory
+mount -t tmpfs -o size=4G tmpfs /var/lib/containers
 
 # Run disk setup
 echo ""
