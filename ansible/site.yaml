@@ -1,0 +1,14 @@
+- name: Configure system
+  hosts: localhost
+  connection: local
+  roles:
+    - base_config
+    - hardware
+    - hyprland
+    - network
+    - secrets
+    - ssh
+    - tools
+    - user_creation
+    - virt
+    - xdg

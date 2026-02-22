@@ -1,0 +1,22 @@
+name: Publish
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "ansible/**"
+      - "scripts/**"
+      - "Containerfile.template"
+      - "base-image.lock"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    uses: ./.github/workflows/build-image.yaml
+    with:
+      push: true
+      image_name: bootc-arch-desktop

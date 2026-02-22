@@ -1,0 +1,117 @@
+- name: Validate user configuration
+  ansible.builtin.assert:
+    that:
+      - item.name is defined
+      - item.name | string | length > 0
+      - item.shell is defined
+      - item.shell | string | length > 0
+      - item.hashed_pw_file is defined
+      - item.hashed_pw_file | string | length > 0
+      - item.extra_groups is defined
+      - item.extra_groups is not mapping
+      - item.extra_groups is iterable
+      - item.extra_groups is not string
+    fail_msg: "User '{{ item.name }}' is missing required fields or has invalid types"
+    quiet: true
+  loop: "{{ user_creation_users }}"
+  tags: [user_creation, validate]
+
+- name: Collect unique shells from user configuration
+  ansible.builtin.set_fact:
+    user_creation_shells: "{{ user_creation_shells | default([]) + [item.shell] }}"
+  loop: "{{ user_creation_users }}"
+  tags: [user_creation, shells]
+
+- name: Deduplicate shell list
+  ansible.builtin.set_fact:
+    user_creation_shells: "{{ user_creation_shells | unique }}"
+  tags: [user_creation, shells]
+
+- name: Install required shells
+  community.general.pacman:
+    name: "{{ user_creation_shells }}"
+    state: present
+  become: true
+  tags: [user_creation, packages]
+
+- name: Create sysusers.d directory
+  ansible.builtin.file:
+    path: /usr/lib/sysusers.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+  tags: [user_creation, sysusers]
+
+- name: Create tmpfiles.d directory
+  ansible.builtin.file:
+    path: /usr/lib/tmpfiles.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+  tags: [user_creation, tmpfiles]
+
+- name: Create systemd-sysusers drop-in directory
+  ansible.builtin.file:
+    path: /usr/lib/systemd/system/systemd-sysusers.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+  tags: [user_creation, systemd]
+
+- name: Generate sysusers.d configuration
+  ansible.builtin.template:
+    src: sysusers.conf.j2
+    dest: /usr/lib/sysusers.d/bootc-users.conf
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  tags: [user_creation, sysusers]
+
+- name: Generate tmpfiles.d configuration
+  ansible.builtin.template:
+    src: tmpfiles.conf.j2
+    dest: /usr/lib/tmpfiles.d/bootc-users-home.conf
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  tags: [user_creation, tmpfiles]
+
+- name: Install password set script
+  ansible.builtin.template:
+    src: set-user-passwords.sh.j2
+    dest: "{{ user_creation_script_path }}/set-user-passwords.sh"
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+  tags: [user_creation, passwords]
+
+- name: Install bootc-user-passwords systemd service
+  ansible.builtin.template:
+    src: bootc-user-passwords.service.j2
+    dest: /usr/lib/systemd/system/bootc-user-passwords.service
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  tags: [user_creation, passwords, systemd]
+
+- name: Enable bootc-user-passwords service
+  ansible.builtin.systemd_service:
+    name: bootc-user-passwords.service
+    enabled: true
+  become: true
+  tags: [user_creation, passwords, systemd]
+
+- name: Set facts for created users
+  ansible.builtin.set_fact:
+    user_creation_data: "{{ [{'name': item.name, 'home_dir': '/var/home/' + item.name}] }}"
+  loop: "{{ user_creation_users }}"

@@ -1,0 +1,30 @@
+- name: Install dev utils
+  community.general.pacman:
+    name:
+      - git
+      - git-lfs
+      - nvim
+      - lazygit
+  become: true
+  tags: [tools, packages]
+
+- name: Install base cli utils
+  community.general.pacman:
+    name:
+      - eza
+      - jq
+      - yq
+      - zoxide
+      - fzf
+      - imagemagick
+  become: true
+  tags: [tools, packages]
+
+- name: Install monitoring utils
+  community.general.pacman:
+    name:
+      - fastfetch
+      - btop
+      - nvtop
+  become: true
+  tags: [tools, packages]

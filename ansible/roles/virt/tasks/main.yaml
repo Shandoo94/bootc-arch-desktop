@@ -1,0 +1,39 @@
+- name: Install virt utils
+  community.general.pacman:
+    name:
+      - podman
+      - crun
+      - distrobox
+      - lazydocker
+      - libvirt
+      - qemu-full
+      - virt-manager
+  become: true
+  tags: [virt, packages]
+
+- name: Install podman rootless setup script
+  ansible.builtin.template:
+    src: podman-rootless-setup.sh.j2
+    dest: "{{ virt_script_path }}/podman-rootless-setID.sh"
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+  tags: [virt, podman]
+
+- name: Install podman rootless systemd service
+  ansible.builtin.template:
+    src: podman-rootless.service.j2
+    dest: /usr/lib/systemd/system/podman-rootless.service
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  tags: [virt, podman, systemd]
+
+- name: Enable podman rootless service
+  ansible.builtin.systemd_service:
+    name: podman-rootless.service
+    enabled: true
+  become: true
+  tags: [virt, podman, systemd]

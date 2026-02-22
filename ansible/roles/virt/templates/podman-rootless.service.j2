@@ -1,0 +1,14 @@
+[Unit]
+Description=Configure subuid/subgid for rootless Podman
+After=systemd-sysusers.service
+Requires=systemd-sysusers.service
+
+[Service]
+Type=oneshot
+ExecStart={{ tools_script_path }}/podman-rootless-setID.sh
+RemainAfterExit=yes
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

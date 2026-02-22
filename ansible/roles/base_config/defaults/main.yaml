@@ -1,0 +1,7 @@
+base_config_locales:
+  - en_US.UTF-8
+base_config_timezone: UTC
+
+base_config_source_dir: "/usr/local/share/config/base"
+base_config_script_dir: "/usr/local/bin"
+base_config_hostname_script_path: "{{ base_config_script_dir }}/set-hostname-cmd.sh"

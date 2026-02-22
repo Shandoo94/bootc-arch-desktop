@@ -1,0 +1,43 @@
+- name: Install ssh server
+  community.general.pacman:
+    name:
+      - openssh
+    state: present
+  become: true
+  tags: [ssh, packages]
+
+- name: Enable ssh
+  ansible.builtin.systemd_service:
+    name: sshd.service
+    enabled: true
+  become: true
+  tags: [ssh, systemd]
+
+- name: Create config folder
+  ansible.builtin.file:
+    dest: "{{ ssh_source_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+  tags: [ssh, config]
+
+- name: Copy file configurations
+  ansible.builtin.copy:
+    src: 20-ssh-base.conf
+    dest: "{{ ssh_source_dir }}/20-ssh-base.conf"
+    owner: root
+    group: root
+    mode: "0644"
+  tags: [ssh, config]
+
+- name: Configure ssh config symlink
+  ansible.builtin.copy:
+    content: "L+ /etc/ssh/sshd_config.d/20-ssh-base.conf - - - - {{ ssh_source_dir }}/20-ssh-base.conf"
+    dest: /usr/lib/tmpfiles.d/ssh-base.conf
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  tags: [ssh, symlink]

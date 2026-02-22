@@ -1,0 +1,12 @@
+secrets_paths:
+  global:
+    user_pw:
+      tiwaz: /etc/user/password
+  atlas:
+    ssh_host_ed25519_key: /etc/ssh/ssh_host_ed25519_key
+
+user_creation_users:
+  - name: tiwaz
+    shell: zsh
+    hashed_pw_file: /run/secrets/share/user_pw/tiwaz
+    extra_groups: ["podman", "wheel", "libvirt", "storage", "power"]

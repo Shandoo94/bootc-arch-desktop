@@ -1,0 +1,64 @@
+- name: Install Hyprland desktop suite
+  community.general.pacman:
+    name:
+      - hyprland
+      - hyprlock
+      - hypridle
+      - kitty
+      - yazi
+      - rofi
+      - waybar
+      - dunst
+      - uwsm
+    state: present
+  become: true
+  tags: [hyprland, packages]
+
+- name: Install Hyprland essentials
+  community.general.pacman:
+    name:
+      - xdg-desktop-portal-hyprland
+      - hyprpolkitagent
+      - qt5-wayland
+      - qt6-wayland
+    state: present
+  become: true
+  tags: [hyprland, packages]
+
+- name: Install Hyprland utils
+  community.general.pacman:
+    name:
+      - hyprcursor
+      - hyprpwcenter
+      - wl-clipboard
+      - brightnessctl
+      - playerctl
+    state: present
+  become: true
+  tags: [hyprland, packages]
+
+- name: Install wallpaper utilities
+  community.general.pacman:
+    name:
+      - hyprpaper
+      - wlr-randr
+      - jq
+    state: present
+  become: true
+  tags: [hyprland, packages]
+
+- name: Install optional yazi file manager dependencies
+  community.general.pacman:
+    name:
+      - ffmpeg
+      - p7zip
+      - jq
+      - poppler
+      - fd
+      - ripgrep
+      - fzf
+      - zoxide
+      - imagemagick
+    state: present
+  become: true
+  tags: [hyprland, packages]

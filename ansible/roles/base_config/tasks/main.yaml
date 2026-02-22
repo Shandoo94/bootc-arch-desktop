@@ -1,0 +1,129 @@
+- name: Install sudo
+  community.general.pacman:
+    name: sudo
+    state: present
+  become: true
+  tags: [base_config, packages]
+
+- name: Configure wheel group sudoers
+  ansible.builtin.copy:
+    content: "%wheel ALL=(ALL:ALL) ALL"
+    dest: /etc/sudoers.d/wheel
+    owner: root
+    group: root
+    mode: "0440"
+    validate: "visudo -cf %s"
+  become: true
+  tags: [base_config, sudo]
+
+- name: Create tmpfiles.d directory
+  ansible.builtin.file:
+    path: /usr/lib/tmpfiles.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+  tags: [base_config, localization]
+
+- name: Configure timezone symlink
+  ansible.builtin.copy:
+    content: "L+ /etc/localtime - - - - /usr/share/zoneinfo/{{ base_config_timezone }}"
+    dest: /usr/lib/tmpfiles.d/timezone.conf
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  tags: [base_config, localization]
+
+- name: Ensure locales are uncommented in locale.gen
+  ansible.builtin.lineinfile:
+    path: /etc/locale.gen
+    regexp: "^#{{ item }} UTF-8"
+    line: "{{ item }} UTF-8"
+  become: true
+  loop: "{{ base_config_locales }}"
+  tags: [base_config, localization]
+
+- name: Generate locales
+  ansible.builtin.command: locale-gen
+  become: true
+  changed_when: false
+  tags: [base_config, localization]
+
+- name: Create locale.conf directory
+  ansible.builtin.file:
+    path: "{{ base_config_source_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+  tags: [base_config, localization]
+
+- name: Configure system locale
+  ansible.builtin.copy:
+    content: "LANG={{ base_config_locales[0] }}"
+    dest: "{{ base_config_source_dir }}/locale.conf"
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  tags: [base_config, localization]
+
+- name: Configure locale symlink
+  ansible.builtin.copy:
+    content: "L+ /etc/locale.conf - - - - {{ base_config_source_dir }}/locale.conf"
+    dest: /usr/lib/tmpfiles.d/locale.conf
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  tags: [base_config, localization]
+
+- name: Create systemd system directory
+  ansible.builtin.file:
+    path: /usr/lib/systemd/system
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+  tags: [base_config, systemd]
+
+- name: Install hostname service
+  ansible.builtin.template:
+    src: set-hostname-cmd.service.j2
+    dest: "/usr/lib/systemd/system/set-hostname-cmd.service"
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  tags: [base_config, systemd]
+
+- name: Enable hostname service
+  ansible.builtin.systemd_service:
+    name: set-hostname-cmd.service
+    enabled: true
+  become: true
+  tags: [base_config, systemd]
+
+- name: Create systemd system directory
+  ansible.builtin.file:
+    path: "{{ base_config_script_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+  tags: [base_config, hostname]
+
+- name: Install hostname script
+  ansible.builtin.copy:
+    src: set-hostname-cmd.sh
+    dest: "{{ base_config_hostname_script_path }}"
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+  tags: [base_config, hostname]

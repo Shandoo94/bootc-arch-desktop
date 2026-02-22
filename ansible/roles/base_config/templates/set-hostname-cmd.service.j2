@@ -1,0 +1,14 @@
+[Unit]
+Description=Set hostname from kernel cmdline
+DefaultDependencies=no
+RequiresMountsFor=/etc
+
+[Service]
+Type=oneshot
+ExecStart={{ base_config_hostname_script_path }}
+RemainAfterExit=yes
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=sysinit.target
