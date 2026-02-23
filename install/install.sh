@@ -57,10 +57,18 @@ echo ""
 pacman -Sy --overwrite "*" podman crun fuse-overlayfs --noconfirm
 rm -rf /var/lib/containers/storage
 mkdir -p /mnt/podman-cache/storage
+mkdir -p /mnt/podman-cache/runroot
 mkdir -p /mnt/podman-cache/tmp
-export TMPDIR=/mnt/podman-cache/tmp
-export STORAGE_DRIVER=overlay
-export STORAGE_OPTS="mount_program=/usr/bin/fuse-overlayfs,graphroot=/mnt/podman-cache/storage"
+mkdir -p /etc/containers
+cat <<EOF > /etc/containers/storage.conf
+[storage]
+driver = "overlay"
+graphroot = "/mnt/podman-cache/storage"
+runroot = "/mnt/podman-cache/runroot"
+
+[storage.options.overlay]
+mount_program = "/usr/bin/fuse-overlayfs"
+EOF
 
 # Run disk setup
 echo ""
