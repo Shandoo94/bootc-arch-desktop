@@ -70,6 +70,11 @@ runroot = "/mnt/podman-cache/runroot"
 mount_program = "/usr/bin/fuse-overlayfs"
 EOF
 
+cat <<EOF > /etc/containers/containers.conf
+[engine]
+tmp_dir = "/mnt/podman-cache/tmp"
+EOF
+
 # Run disk setup
 echo ""
 echo "==> Step 2/3: Running disk setup..."
