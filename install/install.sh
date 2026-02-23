@@ -3,7 +3,7 @@
 set -euo pipefail
 
 HOSTNAME="${1:-}"
-BOOTC_IMAGE="${2:-}"
+BOOTC_IMAGE_TAG="${2:-}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Usage information
@@ -16,7 +16,7 @@ usage() {
 }
 
 # Check arguments
-if [[ -z "$HOSTNAME" ]] || [[ -z "$BOOTC_IMAGE" ]]; then
+if [[ -z "$HOSTNAME" ]] || [[ -z "$BOOTC_IMAGE_TAG" ]]; then
     usage
 fi
 
@@ -39,7 +39,7 @@ echo "=========================================="
 echo "bootc Installation Script"
 echo "=========================================="
 echo "Hostname:     $HOSTNAME"
-echo "Image:        $BOOTC_IMAGE"
+echo "Image tag:    $BOOTC_IMAGE_TAG"
 echo "Disk script:  $DISK_SCRIPT"
 echo "=========================================="
 echo ""
@@ -96,14 +96,14 @@ echo ""
 echo "==> Step 3/3: Installing bootc image..."
 echo ""
 
-podman pull "$BOOTC_IMAGE"
+podman pull "ghcr.io/shandoo94/bootc-arch-desktop:$BOOTC_IMAGE_TAG"
 podman run --rm --privileged --pid=host -it \
     -v /dev:/dev \
     -v /:/target \
     -v /var/lib/containers:/var/lib/containers \
     --security-opt label=type:unconfined_t \
     -e RUST_LOG=debug \
-    "$BOOTC_IMAGE" \
+    "ghcr.io/shandoo94/bootc-arch-desktop:$BOOTC_IMAGE_TAG" \
     bootc install to-filesystem \
     --target-no-signature-verification \
     --karg=root=LABEL=poolfs \
