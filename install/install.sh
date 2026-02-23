@@ -72,7 +72,7 @@ EOF
 
 cat <<EOF > /etc/containers/containers.conf
 [engine]
-tmp_dir = "/mnt/podman-cache/tmp"
+image_copy_tmp_dir = "/mnt/podman-cache/tmp"
 EOF
 
 # Run disk setup
