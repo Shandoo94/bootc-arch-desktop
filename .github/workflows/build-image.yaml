@@ -35,7 +35,7 @@ jobs:
         run: |
           BUILD_DATE=$(date +%Y%m%d)
           BUILD_NUMBER=${{ github.run_number }}
-          echo "version=${BUILD_DATE}.${BUILD_NUMBER}" >> "$GITHUB_OUTPUT"
+          echo "version=${BUILD_DATE}.${BUILD_NUMBER}-beta" >> "$GITHUB_OUTPUT"
           OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           echo "namespace=$OWNER" >> "$GITHUB_OUTPUT"
 
