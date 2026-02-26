@@ -1,7 +1,14 @@
 set -euo pipefail
 
+IMAGE_PATH="${1:-}"
+
+# Check arguments
+if [[ -z "$IMAGE_PATH" ]]; then
+  echo "Error: No image path provided"
+  exit 1
+fi
+
 # Create a blank file (this will be our virtual hard drive)
-IMAGE_PATH="install-image.raw"
 truncate -s 8G "$IMAGE_PATH"
 
 # Attach it as a loop device so Linux treats it like a real disk
