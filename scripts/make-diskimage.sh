@@ -1,6 +1,24 @@
 set -euo pipefail
 
 IMAGE_PATH="${1:-}"
+LOOPDEV=""
+MOUNT_DIR=""
+
+# Cleanup function - always unmount and detach
+cleanup() {
+  echo "Cleaning up..."
+  if [ -n "${MOUNT_DIR:-}" ] && [ -d "$MOUNT_DIR" ]; then
+    echo "Unmounting filesystems..."
+    sudo umount -R "$MOUNT_DIR" 2>/dev/null || true
+    rmdir "$MOUNT_DIR" 2>/dev/null || true
+  fi
+  if [ -n "${LOOPDEV:-}" ]; then
+    echo "Detaching loop device $LOOPDEV..."
+    sudo losetup -d "$LOOPDEV" 2>/dev/null || true
+  fi
+  echo "Cleanup complete"
+}
+trap cleanup EXIT
 
 # Check arguments
 if [[ -z "$IMAGE_PATH" ]]; then
@@ -16,10 +34,9 @@ LOOPDEV=$(sudo losetup -f --show "$IMAGE_PATH")
 
 # Partitioning
 sudo parted -s "$LOOPDEV" mklabel gpt
-sduo parted -s "$LOOPDEV" mkpart ESP fat32 1MiB 1GiB
-sduo parted -s "$LOOPDEV" set 1 esp on
-sudo parted -s "$LOOPDEV" mkpart swap linux-swap 1GiB 3GiB
-sudo parted -s "$LOOPDEV" mkpart pool 3GiB 100%
+sudo parted -s "$LOOPDEV" mkpart ESP fat32 1MiB 1GiB
+sudo parted -s "$LOOPDEV" set 1 esp on
+sudo parted -s "$LOOPDEV" mkpart pool 1GiB 100%
 
 # Get the partition paths
 sudo partprobe "$LOOPDEV"
@@ -30,26 +47,29 @@ ROOT_PART="${LOOPDEV}p2"
 sudo mkfs.fat -F 32 "$EFI_PART"
 sudo mkfs.btrfs -f -L poolfs "$ROOT_PART"
 
+# Create temporary mount point
+MOUNT_DIR=$(mktemp -d)
+echo "Using temporary mount point: $MOUNT_DIR"
+
 # Mount and create subvolumes
-mkdir -p /mnt
-sudo mount -t btrfs -o subvol=/ "$ROOT_PART" /mnt
-sudo btrfs subvolume create /mnt/root
-sudo btrfs subvolume create /mnt/var
-sudo umount /mnt
+sudo mount -t btrfs -o subvol=/ "$ROOT_PART" "$MOUNT_DIR"
+sudo btrfs subvolume create "$MOUNT_DIR/root"
+sudo btrfs subvolume create "$MOUNT_DIR/var"
+sudo umount "$MOUNT_DIR"
 
 # Remount in correct layout for installation
-mount -t btrfs -o subvol=/root "$ROOT_PART" /mnt
-mount --mkdir -t btrfs -o subvol=/var "$ROOT_PART" /mnt/var
-mount --mkdir "$EFI_PART" /mnt/boot
+sudo mount -t btrfs -o subvol=/root "$ROOT_PART" "$MOUNT_DIR"
+sudo mount --mkdir -t btrfs -o subvol=/var "$ROOT_PART" "$MOUNT_DIR/var"
+sudo mount --mkdir "$EFI_PART" "$MOUNT_DIR/boot"
 
 # Run installation
-podman run --rm --privileged --pid=host -it \
+sudo podman run --rm --privileged --pid=host -it \
     -v /dev:/dev \
     -v /:/target \
     -v /var/lib/containers:/var/lib/containers \
     --security-opt label=type:unconfined_t \
     -e RUST_LOG=debug \
-    "ghcr.io/shandoo94/bootc-arch-desktop:$BOOTC_IMAGE_TAG" \
+    ghcr.io/shandoo94/bootc-arch-desktop:latest \
     bootc install to-filesystem \
     --target-no-signature-verification \
     --karg=root=LABEL=poolfs \
@@ -59,8 +79,6 @@ podman run --rm --privileged --pid=host -it \
     --composefs-backend \
     --disable-selinux \
     --bootloader systemd \
-    /mnt
+    "$MOUNT_DIR"
 
-# Unbount the disk image
-sudo umount /mnt
-sudo loseup -d "$LOOPDEV"
+echo "Installation complete. Disk image created at: $IMAGE_PATH"
