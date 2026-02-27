@@ -15,21 +15,6 @@ else
     echo "Running as root, sudo not needed"
 fi
 
-# Verify fuse-overlayfs is available and configured
-if ! command -v fuse-overlayfs &> /dev/null; then
-    echo "Error: fuse-overlayfs is not installed"
-    echo "This should have been installed during distrobox setup"
-    echo "Please recreate the builder container: make clean-builder && make setup-builder"
-    exit 1
-fi
-
-if [ -f /etc/containers/storage.conf ]; then
-    if ! grep -q "fuse-overlayfs" /etc/containers/storage.conf 2>/dev/null; then
-        echo "Warning: /etc/containers/storage.conf exists but fuse-overlayfs not configured"
-        echo "You may need to recreate the builder container: make clean-builder && make setup-builder"
-    fi
-fi
-
 # Cleanup function - always unmount and detach
 cleanup() {
   echo "Cleaning up..."
