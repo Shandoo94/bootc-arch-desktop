@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 IMAGE_PATH="${1:-}"
@@ -6,17 +6,41 @@ BOOTC_IMAGE="${BOOTC_IMAGE:-ghcr.io/shandoo94/bootc-arch-desktop:latest}"
 LOOPDEV=""
 MOUNT_DIR=""
 
+# Detect if we need sudo (not running as root)
+if [ "$EUID" -ne 0 ]; then
+    SUDO="sudo"
+    echo "Running as non-root user, will use sudo for privileged operations"
+else
+    SUDO=""
+    echo "Running as root, sudo not needed"
+fi
+
+# Verify fuse-overlayfs is available and configured
+if ! command -v fuse-overlayfs &> /dev/null; then
+    echo "Error: fuse-overlayfs is not installed"
+    echo "This should have been installed during distrobox setup"
+    echo "Please recreate the builder container: make clean-builder && make setup-builder"
+    exit 1
+fi
+
+if [ -f /etc/containers/storage.conf ]; then
+    if ! grep -q "fuse-overlayfs" /etc/containers/storage.conf 2>/dev/null; then
+        echo "Warning: /etc/containers/storage.conf exists but fuse-overlayfs not configured"
+        echo "You may need to recreate the builder container: make clean-builder && make setup-builder"
+    fi
+fi
+
 # Cleanup function - always unmount and detach
 cleanup() {
   echo "Cleaning up..."
   if [ -n "${MOUNT_DIR:-}" ] && [ -d "$MOUNT_DIR" ]; then
     echo "Unmounting filesystems..."
-    umount -R "$MOUNT_DIR" 2>/dev/null || true
+    $SUDO umount -R "$MOUNT_DIR" 2>/dev/null || true
     rmdir "$MOUNT_DIR" 2>/dev/null || true
   fi
   if [ -n "${LOOPDEV:-}" ]; then
     echo "Detaching loop device $LOOPDEV..."
-    losetup -d "$LOOPDEV" 2>/dev/null || true
+    $SUDO losetup -d "$LOOPDEV" 2>/dev/null || true
   fi
   echo "Cleanup complete"
 }
@@ -32,43 +56,44 @@ fi
 truncate -s 8G "$IMAGE_PATH"
 
 # Attach it as a loop device so Linux treats it like a real disk
-LOOPDEV=$(losetup -f --show "$IMAGE_PATH")
+LOOPDEV=$($SUDO losetup -f --show "$IMAGE_PATH")
 
 # Partitioning
-parted -s "$LOOPDEV" mklabel gpt
-parted -s "$LOOPDEV" mkpart ESP fat32 1MiB 1GiB
-parted -s "$LOOPDEV" set 1 esp on
-parted -s "$LOOPDEV" mkpart pool 1GiB 100%
+$SUDO parted -s "$LOOPDEV" mklabel gpt
+$SUDO parted -s "$LOOPDEV" mkpart ESP fat32 1MiB 1GiB
+$SUDO parted -s "$LOOPDEV" set 1 esp on
+$SUDO parted -s "$LOOPDEV" mkpart pool 1GiB 100%
 
 # Get the partition paths
-partprobe "$LOOPDEV"
+$SUDO partprobe "$LOOPDEV"
 EFI_PART="${LOOPDEV}p1"
 ROOT_PART="${LOOPDEV}p2"
 
 # Format partitions
-mkfs.fat -F 32 "$EFI_PART"
-mkfs.btrfs -f -L poolfs "$ROOT_PART"
+$SUDO mkfs.fat -F 32 "$EFI_PART"
+$SUDO mkfs.btrfs -f -L poolfs "$ROOT_PART"
 
 # Create temporary mount point
 MOUNT_DIR=$(mktemp -d)
 echo "Using temporary mount point: $MOUNT_DIR"
 
 # Mount and create subvolumes
-mount -t btrfs -o subvol=/ "$ROOT_PART" "$MOUNT_DIR"
-btrfs subvolume create "$MOUNT_DIR/root"
-btrfs subvolume create "$MOUNT_DIR/var"
-umount "$MOUNT_DIR"
+$SUDO mount -t btrfs -o subvol=/ "$ROOT_PART" "$MOUNT_DIR"
+$SUDO btrfs subvolume create "$MOUNT_DIR/root"
+$SUDO btrfs subvolume create "$MOUNT_DIR/var"
+$SUDO umount "$MOUNT_DIR"
 
 # Remount in correct layout for installation
-mount -t btrfs -o subvol=/root "$ROOT_PART" "$MOUNT_DIR"
-mount --mkdir -t btrfs -o subvol=/var "$ROOT_PART" "$MOUNT_DIR/var"
-mount --mkdir "$EFI_PART" "$MOUNT_DIR/boot"
+$SUDO mount -t btrfs -o subvol=/root "$ROOT_PART" "$MOUNT_DIR"
+$SUDO mount --mkdir -t btrfs -o subvol=/var "$ROOT_PART" "$MOUNT_DIR/var"
+$SUDO mount --mkdir "$EFI_PART" "$MOUNT_DIR/boot"
 
 # Run installation
-podman run --rm --privileged --pid=host -it \
+$SUDO podman run --rm --privileged --pid=host -it \
     -v /dev:/dev \
     -v /:/target \
     -v /var/lib/containers:/var/lib/containers \
+    -v "$MOUNT_DIR:$MOUNT_DIR:rslave" \
     --security-opt label=type:unconfined_t \
     -e RUST_LOG=debug \
     "$BOOTC_IMAGE" \

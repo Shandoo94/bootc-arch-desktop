@@ -79,4 +79,4 @@ diskimage:
 .PHONY: clean-builder
 clean-builder:
 	@echo "==> Removing distrobox builder environment"
-	distrobox rm -f bootc-arch-desktop-builder || true
+	distrobox rm --root -f bootc-arch-desktop-builder || true

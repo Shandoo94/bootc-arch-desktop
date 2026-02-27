@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 # Wrapper script to run disk image creation in distrobox
@@ -48,7 +48,7 @@ if ! command -v distrobox &> /dev/null; then
 fi
 
 # Check if container exists
-if ! distrobox list 2>/dev/null | grep -q "^$CONTAINER_NAME"; then
+if ! distrobox list --root 2>/dev/null | grep -q "^$CONTAINER_NAME"; then
     info "Container '$CONTAINER_NAME' not found. Creating from distrobox.ini..."
 
     if [[ ! -f "$PROJECT_ROOT/distrobox.ini" ]]; then
@@ -75,7 +75,7 @@ info "Running disk image creation in container '$CONTAINER_NAME'..."
 info "Output will be: $IMAGE_PATH"
 
 # Execute in distrobox with proper environment
-if distrobox enter $BOOTC_IMAGE_ARG "$CONTAINER_NAME" -- \
+if distrobox enter --root $BOOTC_IMAGE_ARG "$CONTAINER_NAME" -- \
     bash "$PROJECT_ROOT/scripts/make-diskimage.sh" "$IMAGE_PATH"; then
     info "Disk image created successfully: $IMAGE_PATH"
 else
