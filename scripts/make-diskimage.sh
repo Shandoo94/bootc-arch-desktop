@@ -59,7 +59,7 @@ $SUDO mkfs.fat -F 32 "$EFI_PART"
 $SUDO mkfs.btrfs -f -L poolfs "$ROOT_PART"
 
 # Create temporary mount point
-MOUNT_DIR=$(mktemp -d)
+MOUNT_DIR=$(mktemp -d -p /var/tmp)
 echo "Using temporary mount point: $MOUNT_DIR"
 
 # Mount and create subvolumes
@@ -74,7 +74,7 @@ $SUDO mount --mkdir -t btrfs -o subvol=/var "$ROOT_PART" "$MOUNT_DIR/var"
 $SUDO mount --mkdir "$EFI_PART" "$MOUNT_DIR/boot"
 
 # Run installation
-$SUDO podman run --rm --privileged --pid=host -it \
+$SUDO podman run --rm --privileged --pid=host \
     -v /dev:/dev \
     -v /:/target \
     -v /var/lib/containers:/var/lib/containers \
