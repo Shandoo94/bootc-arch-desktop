@@ -72,14 +72,12 @@ $SUDO umount "$MOUNT_DIR"
 echo "Mount for installation"
 $SUDO mount -t btrfs -o subvol=/root "$ROOT_PART" "$MOUNT_DIR"
 $SUDO mount --mkdir -t btrfs -o subvol=/var "$ROOT_PART" "$MOUNT_DIR/var"
-$SUDO mount --mkdir "$EFI_PART" "$MOUNT_DIR/boot"
+$SUDO mount --mkdir "$EFI_PART" "$MOUNT_DIR/boot/efi"
 
 # Run installation
 echo "Start installation"
 $SUDO podman run --rm --privileged --pid=host \
     -v /dev:/dev \
-    -v /:/target \
-    -v /var/lib/containers:/var/lib/containers \
     -v "$MOUNT_DIR:$MOUNT_DIR:rslave" \
     --security-opt label=type:unconfined_t \
     -e RUST_LOG=debug \
