@@ -3,6 +3,7 @@
   connection: local
   roles:
     - base_config
+    - greetd
     - hardware
     - hyprland
     - network
