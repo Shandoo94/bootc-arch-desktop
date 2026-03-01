@@ -14,9 +14,7 @@ help:
 	@echo "  make clean           Remove generated Containerfile"
 	@echo ""
 	@echo "Disk Image Creation:"
-	@echo "  make setup-builder   Create distrobox builder environment (one-time setup)"
 	@echo "  make diskimage       Create bootable disk image (requires OUTPUT=path)"
-	@echo "  make clean-builder   Remove distrobox builder environment"
 	@echo ""
 	@echo "Environment variables:"
 	@echo "  OCITOOL=$(OCITOOL)"
@@ -53,15 +51,6 @@ clean:
 	@echo "==> Cleaning generated files"
 	rm -f Containerfile
 
-.PHONY: setup-builder
-setup-builder:
-	@echo "==> Setting up distrobox builder environment"
-	@if distrobox list 2>/dev/null | grep -q "^bootc-arch-desktop-builder"; then \
-		echo "Builder environment already exists"; \
-	else \
-		distrobox assemble create --file distrobox.ini; \
-	fi
-
 .PHONY: diskimage
 diskimage:
 	@if [ -z "$(OUTPUT)" ]; then \
@@ -74,9 +63,4 @@ diskimage:
 	fi
 	@echo "==> Creating disk image: $(OUTPUT)"
 	@mkdir -p "$(dir $(OUTPUT))"
-	./scripts/build-diskimage-in-distrobox.sh "$(OUTPUT)"
-
-.PHONY: clean-builder
-clean-builder:
-	@echo "==> Removing distrobox builder environment"
-	distrobox rm --root -f bootc-arch-desktop-builder || true
+	./scripts/make-diskimage.sh "$(OUTPUT)"
