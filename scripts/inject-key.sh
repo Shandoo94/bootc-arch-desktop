@@ -35,4 +35,4 @@ ROOT_PART="${LOOPDEV}p2"
 # Create temporary mount point
 MOUNT_DIR=$(mktemp -d -p /var/tmp)
 echo "Using temporary mount point: $MOUNT_DIR"
-$SUDO mount --mkdir -t btrfs -o subvol=/var "$ROOT_PART" "$MOUNT_DIR/var"
+$SUDO mount --mkdir -t btrfs -o subvol=/var "$ROOT_PART" "$MOUNT_DIR"
