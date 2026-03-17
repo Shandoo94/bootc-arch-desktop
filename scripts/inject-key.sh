@@ -2,9 +2,9 @@
 set -euo pipefail
 
 IMAGE_PATH="${1:-}"
+KEY_PATH="${2:-}"
 LOOPDEV=""
 MOUNT_DIR=""
-KEY_PATH="${2:-}"
 
 # Detect if we need sudo (not running as root)
 if [ "$EUID" -ne 0 ]; then
