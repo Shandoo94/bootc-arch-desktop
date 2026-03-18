@@ -3,6 +3,8 @@ set -euo pipefail
 
 IMAGE_PATH="${1:-}"
 KEY_PATH="${2:-}"
+SECRETS_PATH="${3:-}"
+SECRETS_KEY="${4:-}"
 LOOPDEV=""
 MOUNT_DIR=""
 
@@ -22,6 +24,14 @@ if [[ -z "$IMAGE_PATH" ]]; then
 fi
 if [[ -z "$KEY_PATH" ]]; then
   echo "Error: No key path provided"
+  exit 1
+fi
+if [[ -z "$SECRETS_PATH" ]]; then
+  echo "Error: No path for sops encrypted secrets provided"
+  exit 1
+fi
+if [[ -z "$SECRETS_KEY" ]]; then
+  echo "Error: No yaml key for secret provided"
   exit 1
 fi
 
