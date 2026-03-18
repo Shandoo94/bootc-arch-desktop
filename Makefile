@@ -2,6 +2,7 @@ OCITOOL ?= podman
 BASE_IMAGE_REF ?= $(shell head -n1 base-image.lock | tr -d '[:space:]')
 BUILD_VERSION ?= dev
 GIT_SHA ?= $(shell git rev-parse HEAD 2>/dev/null || echo "unknown")
+KEY_PATH ?= lib/sops/age/key.txt
 
 .PHONY: help
 help:
@@ -15,6 +16,7 @@ help:
 	@echo ""
 	@echo "Disk Image Creation:"
 	@echo "  make diskimage       Create bootable disk image (requires OUTPUT=path)"
+	@echo "  make inject-key      Inject age key into disk image (requires OUTPUT, SECRETS_FILE, SECRETS_KEY)"
 	@echo ""
 	@echo "Environment variables:"
 	@echo "  OCITOOL=$(OCITOOL)"
@@ -22,6 +24,9 @@ help:
 	@echo "  BUILD_VERSION=$(BUILD_VERSION)"
 	@echo "  OUTPUT=<path>        Output path for disk image"
 	@echo "  BOOTC_IMAGE=<ref>    Bootc image to install (default: ghcr.io/shandoo94/bootc-arch-desktop:latest)"
+	@echo "  SECRETS_FILE=<path>  Path to SOPS-encrypted secrets file (required for inject-key)"
+	@echo "  SECRETS_KEY=<key>    YAML key path to extract (required for inject-key, e.g., atlas.age_key)"
+	@echo "  KEY_PATH=$(KEY_PATH)  Destination path relative to /var"
 
 .PHONY: containerfile
 containerfile:
@@ -64,3 +69,23 @@ diskimage:
 	@echo "==> Creating disk image: $(OUTPUT)"
 	@mkdir -p "$(dir $(OUTPUT))"
 	./scripts/make-diskimage.sh "$(OUTPUT)"
+
+.PHONY: inject-key
+inject-key:
+	@if [ -z "$(OUTPUT)" ]; then \
+		echo "Error: OUTPUT not set"; \
+		echo "Usage: make inject-key OUTPUT=path/to/image.raw SECRETS_FILE=path/to/secrets.yaml SECRETS_KEY=keypath"; \
+		exit 1; \
+	fi
+	@if [ -z "$(SECRETS_FILE)" ]; then \
+		echo "Error: SECRETS_FILE not set"; \
+		echo "Usage: make inject-key OUTPUT=path/to/image.raw SECRETS_FILE=path/to/secrets.yaml SECRETS_KEY=keypath"; \
+		exit 1; \
+	fi
+	@if [ -z "$(SECRETS_KEY)" ]; then \
+		echo "Error: SECRETS_KEY not set"; \
+		echo "Usage: make inject-key OUTPUT=path/to/image.raw SECRETS_FILE=path/to/secrets.yaml SECRETS_KEY=keypath"; \
+		exit 1; \
+	fi
+	@echo "==> Injecting key into disk image: $(OUTPUT)"
+	./scripts/inject-key.sh "$(OUTPUT)" "$(KEY_PATH)" "$(SECRETS_FILE)" "$(SECRETS_KEY)"
