@@ -2,9 +2,41 @@
 set -euo pipefail
 
 IMAGE_PATH="${1:-}"
+HOSTNAME="${2:-}"
 BOOTC_IMAGE="${BOOTC_IMAGE:-ghcr.io/shandoo94/bootc-arch-desktop:latest}"
 LOOPDEV=""
 MOUNT_DIR=""
+
+# Validate hostname per RFC 1123
+validate_hostname() {
+  local hostname="$1"
+  
+  # Check length (1-63 characters)
+  if [[ ${#hostname} -gt 63 ]]; then
+    echo "Error: Hostname must be 63 characters or less (got ${#hostname})"
+    return 1
+  fi
+  
+  # Check for valid characters (alphanumeric and hyphens only)
+  if [[ ! "$hostname" =~ ^[a-zA-Z0-9-]+$ ]]; then
+    echo "Error: Hostname must contain only alphanumeric characters and hyphens"
+    return 1
+  fi
+  
+  # Check doesn't start with hyphen
+  if [[ "$hostname" =~ ^- ]]; then
+    echo "Error: Hostname cannot start with a hyphen"
+    return 1
+  fi
+  
+  # Check doesn't end with hyphen
+  if [[ "$hostname" =~ -$ ]]; then
+    echo "Error: Hostname cannot end with a hyphen"
+    return 1
+  fi
+  
+  return 0
+}
 
 # Detect if we need sudo (not running as root)
 if [ "$EUID" -ne 0 ]; then
@@ -33,8 +65,30 @@ trap cleanup EXIT
 
 # Check arguments
 if [[ -z "$IMAGE_PATH" ]]; then
+  echo "Usage: $(basename "$0") <image-path> [hostname]"
   echo "Error: No image path provided"
   exit 1
+fi
+
+# Validate and apply hostname to filename if provided
+if [[ -n "$HOSTNAME" ]]; then
+  if ! validate_hostname "$HOSTNAME"; then
+    exit 1
+  fi
+  
+  # Insert hostname suffix before extension
+  # e.g., /path/to/disk.raw -> /path/to/disk-myhostname.raw
+  dir=$(dirname "$IMAGE_PATH")
+  filename=$(basename "$IMAGE_PATH")
+  if [[ "$filename" == *.* ]]; then
+    base="${filename%.*}"
+    ext="${filename##*.}"
+    IMAGE_PATH="$dir/$base-$HOSTNAME.$ext"
+  else
+    IMAGE_PATH="$IMAGE_PATH-$HOSTNAME"
+  fi
+  echo "Hostname '$HOSTNAME' will be set via kernel argument"
+  echo "Output image path: $IMAGE_PATH"
 fi
 
 # Create a blank file (this will be our virtual hard drive)
@@ -74,6 +128,27 @@ $SUDO mount -t btrfs -o subvol=/root "$ROOT_PART" "$MOUNT_DIR"
 $SUDO mount --mkdir -t btrfs -o subvol=/var "$ROOT_PART" "$MOUNT_DIR/var"
 $SUDO mount --mkdir "$EFI_PART" "$MOUNT_DIR/boot/efi"
 
+# Build bootc install arguments
+BOOTC_ARGS=(
+    bootc install to-filesystem
+    --target-no-signature-verification
+    --karg=root=LABEL=poolfs
+    --karg=rootflags=compress=zstd,noatime,subvol=/root
+    "--karg=systemd.mount_extra=LABEL=poolfs:/var:btrfs:compress=zstd,noatime,subvol=/var"
+    --karg=rw
+    "--source-imgref=docker://$BOOTC_IMAGE"
+    --composefs-backend
+    --disable-selinux
+    --bootloader systemd
+)
+
+# Add hostname kernel argument if provided
+if [[ -n "$HOSTNAME" ]]; then
+    BOOTC_ARGS+=("--karg=bootc.hostname=$HOSTNAME")
+fi
+
+BOOTC_ARGS+=("$MOUNT_DIR")
+
 # Run installation
 echo "Start installation"
 $SUDO podman run --rm --privileged --pid=host \
@@ -82,16 +157,6 @@ $SUDO podman run --rm --privileged --pid=host \
     --security-opt label=type:unconfined_t \
     -e RUST_LOG=debug \
     "$BOOTC_IMAGE" \
-    bootc install to-filesystem \
-    --target-no-signature-verification \
-    --karg=root=LABEL=poolfs \
-    --karg=rootflags=compress=zstd,noatime,subvol=/root \
-    --karg="systemd.mount_extra=LABEL=poolfs:/var:btrfs:compress=zstd,noatime,subvol=/var" \
-    --karg=rw \
-    --source-imgref="docker://$BOOTC_IMAGE" \
-    --composefs-backend \
-    --disable-selinux \
-    --bootloader systemd \
-    "$MOUNT_DIR"
+    "${BOOTC_ARGS[@]}"
 
 echo "Installation complete. Disk image created at: $IMAGE_PATH"

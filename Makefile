@@ -15,7 +15,7 @@ help:
 	@echo "  make clean           Remove generated Containerfile"
 	@echo ""
 	@echo "Disk Image Creation:"
-	@echo "  make diskimage       Create bootable disk image (requires OUTPUT=path)"
+	@echo "  make diskimage       Create bootable disk image (requires OUTPUT=path, optional IMAGE_HOSTNAME=name)"
 	@echo "  make inject-key      Inject age key into disk image (requires OUTPUT, SECRETS_FILE, SECRETS_KEY)"
 	@echo ""
 	@echo "Environment variables:"
@@ -24,6 +24,7 @@ help:
 	@echo "  BUILD_VERSION=$(BUILD_VERSION)"
 	@echo "  OUTPUT=<path>        Output path for disk image"
 	@echo "  BOOTC_IMAGE=<ref>    Bootc image to install (default: ghcr.io/shandoo94/bootc-arch-desktop:latest)"
+	@echo "  IMAGE_HOSTNAME=<name> Hostname to embed in disk image (optional, suffixes output filename)"
 	@echo "  SECRETS_FILE=<path>  Path to SOPS-encrypted secrets file (required for inject-key)"
 	@echo "  SECRETS_KEY=<key>    YAML key path to extract (required for inject-key, e.g., atlas.age_key)"
 	@echo "  KEY_PATH=$(KEY_PATH)  Destination path relative to /var"
@@ -60,15 +61,19 @@ clean:
 diskimage:
 	@if [ -z "$(OUTPUT)" ]; then \
 		echo "Error: OUTPUT not set"; \
-		echo "Usage: make diskimage OUTPUT=path/to/image.raw"; \
+		echo "Usage: make diskimage OUTPUT=path/to/image.raw [IMAGE_HOSTNAME=name]"; \
 		echo ""; \
 		echo "Optional: Set BOOTC_IMAGE to use a specific bootc image"; \
-		echo "Example: make diskimage OUTPUT=output/disk.raw BOOTC_IMAGE=localhost/bootc-arch-base:latest"; \
+		echo "Optional: Set IMAGE_HOSTNAME to embed hostname and suffix output filename"; \
+		echo ""; \
+		echo "Examples:"; \
+		echo "  make diskimage OUTPUT=output/disk.raw"; \
+		echo "  make diskimage OUTPUT=output/disk.raw IMAGE_HOSTNAME=workstation"; \
+		echo "  make diskimage OUTPUT=output/disk.raw BOOTC_IMAGE=localhost/bootc-arch-base:latest"; \
 		exit 1; \
 	fi
-	@echo "==> Creating disk image: $(OUTPUT)"
 	@mkdir -p "$(dir $(OUTPUT))"
-	./scripts/make-diskimage.sh "$(OUTPUT)"
+	./scripts/make-diskimage.sh "$(OUTPUT)" "$(IMAGE_HOSTNAME)"
 
 .PHONY: inject-key
 inject-key:
