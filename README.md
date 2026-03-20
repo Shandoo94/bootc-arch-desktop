@@ -61,7 +61,7 @@ After installation, the age key must be injected into the diskimage, so the syst
 make inject-key \
     OUTPUT=output/disk.raw \
     SECRETS_FILE=ansible/secrets/host_secrets.yaml \
-    SECRETS_KEY=prima
+    SECRETS_KEY=primary_key
 ```
 
 Both steps can be combined:
