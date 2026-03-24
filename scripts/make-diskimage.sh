@@ -134,9 +134,9 @@ BOOTC_ARGS=(
     --target-no-signature-verification
     --karg=root=LABEL=poolfs
     --karg=rootflags=compress=zstd,noatime,subvol=/root
-    "--karg=systemd.mount_extra=LABEL=poolfs:/var:btrfs:compress=zstd,noatime,subvol=/var"
+    --karg="systemd.mount_extra=LABEL=poolfs:/var:btrfs:compress=zstd,noatime,subvol=/var"
     --karg=rw
-    "--source-imgref=docker://$BOOTC_IMAGE"
+    --source-imgref="docker://$BOOTC_IMAGE"
     --composefs-backend
     --disable-selinux
     --bootloader systemd
