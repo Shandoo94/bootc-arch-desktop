@@ -86,10 +86,10 @@ ROOT_PART="${LOOPDEV}p2"
 # Create temporary mount point
 MOUNT_DIR=$(mktemp -d -p /var/tmp)
 echo "Using temporary mount point: $MOUNT_DIR"
-$SUDO mount -t btrfs -o subvol=/var "$ROOT_PART" "$MOUNT_DIR"
+$SUDO mount -t btrfs -o subvol=/root "$ROOT_PART" "$MOUNT_DIR"
 
 # Create parent directories for the key
-KEY_DEST="$MOUNT_DIR/$KEY_PATH"
+KEY_DEST="$MOUNT_DIR/state/os/default/var/$KEY_PATH"
 KEY_DIR=$(dirname "$KEY_DEST")
 echo "Creating directory: $KEY_DIR"
 $SUDO mkdir -p "$KEY_DIR"

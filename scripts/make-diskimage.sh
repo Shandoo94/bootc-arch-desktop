@@ -119,13 +119,11 @@ echo "Using temporary mount point: $MOUNT_DIR"
 # Mount and create subvolumes
 $SUDO mount -t btrfs -o subvol=/ "$ROOT_PART" "$MOUNT_DIR"
 $SUDO btrfs subvolume create "$MOUNT_DIR/root"
-$SUDO btrfs subvolume create "$MOUNT_DIR/var"
 $SUDO umount "$MOUNT_DIR"
 
 # Remount in correct layout for installation
 echo "Mount for installation"
 $SUDO mount -t btrfs -o subvol=/root "$ROOT_PART" "$MOUNT_DIR"
-$SUDO mount --mkdir -t btrfs -o subvol=/var "$ROOT_PART" "$MOUNT_DIR/var"
 $SUDO mount --mkdir "$EFI_PART" "$MOUNT_DIR/boot/efi"
 
 # Build bootc install arguments
@@ -134,7 +132,6 @@ BOOTC_ARGS=(
     --target-no-signature-verification
     --karg=root=LABEL=poolfs
     --karg=rootflags=compress=zstd,noatime,subvol=/root
-    --karg="systemd.mount_extra=LABEL=poolfs:/var:btrfs:compress=zstd,noatime,subvol=/var"
     --karg=rw
     --source-imgref="docker://$BOOTC_IMAGE"
     --composefs-backend
