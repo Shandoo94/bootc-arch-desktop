@@ -141,7 +141,7 @@ BOOTC_ARGS=(
 
 # Add hostname kernel argument if provided
 if [[ -n "$HOSTNAME" ]]; then
-    BOOTC_ARGS+=("--karg=bootc.hostname=$HOSTNAME")
+    BOOTC_ARGS+=(--karg="bootc.hostname=$HOSTNAME")
 fi
 
 BOOTC_ARGS+=("$MOUNT_DIR")
