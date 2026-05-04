@@ -2,19 +2,32 @@ OCITOOL ?= podman
 BASE_IMAGE_REF ?= $(shell head -n1 base-image.lock | tr -d '[:space:]')
 BUILD_VERSION ?= dev
 GIT_SHA ?= $(shell git rev-parse HEAD 2>/dev/null || echo "unknown")
+KEY_PATH ?= lib/sops/age/key.txt
 
 .PHONY: help
 help:
 	@echo "Arch Bootc Desktop - Build Targets"
 	@echo ""
-	@echo "  make containerfile  Generate Containerfile from template"
-	@echo "  make build          Generate Containerfile and build image"
-	@echo "  make clean          Remove generated Containerfile"
+	@echo "Container Image:"
+	@echo "  make containerfile   Generate Containerfile from template"
+	@echo "  make build           Generate Containerfile and build image"
+	@echo "  make inspect         Inspect built image"
+	@echo "  make clean           Remove generated Containerfile"
+	@echo ""
+	@echo "Disk Image Creation:"
+	@echo "  make diskimage       Create bootable disk image (requires OUTPUT=path, optional IMAGE_HOSTNAME=name)"
+	@echo "  make inject-key      Inject age key into disk image (requires OUTPUT, SECRETS_FILE, SECRETS_KEY)"
 	@echo ""
 	@echo "Environment variables:"
 	@echo "  OCITOOL=$(OCITOOL)"
 	@echo "  BASE_IMAGE_REF=$(BASE_IMAGE_REF)"
 	@echo "  BUILD_VERSION=$(BUILD_VERSION)"
+	@echo "  OUTPUT=<path>        Output path for disk image"
+	@echo "  BOOTC_IMAGE=<ref>    Bootc image to install (default: ghcr.io/shandoo94/bootc-arch-desktop:latest)"
+	@echo "  IMAGE_HOSTNAME=<name> Hostname to embed in disk image (optional, suffixes output filename)"
+	@echo "  SECRETS_FILE=<path>  Path to SOPS-encrypted secrets file (required for inject-key)"
+	@echo "  SECRETS_KEY=<key>    YAML key path to extract (required for inject-key, e.g., atlas.age_key)"
+	@echo "  KEY_PATH=$(KEY_PATH)  Destination path relative to /var"
 
 .PHONY: containerfile
 containerfile:
@@ -43,3 +56,41 @@ inspect:
 clean:
 	@echo "==> Cleaning generated files"
 	rm -f Containerfile
+
+.PHONY: diskimage
+diskimage:
+	@if [ -z "$(OUTPUT)" ]; then \
+		echo "Error: OUTPUT not set"; \
+		echo "Usage: make diskimage OUTPUT=path/to/image.raw [IMAGE_HOSTNAME=name]"; \
+		echo ""; \
+		echo "Optional: Set BOOTC_IMAGE to use a specific bootc image"; \
+		echo "Optional: Set IMAGE_HOSTNAME to embed hostname and suffix output filename"; \
+		echo ""; \
+		echo "Examples:"; \
+		echo "  make diskimage OUTPUT=output/disk.raw"; \
+		echo "  make diskimage OUTPUT=output/disk.raw IMAGE_HOSTNAME=workstation"; \
+		echo "  make diskimage OUTPUT=output/disk.raw BOOTC_IMAGE=localhost/bootc-arch-base:latest"; \
+		exit 1; \
+	fi
+	@mkdir -p "$(dir $(OUTPUT))"
+	./scripts/make-diskimage.sh "$(OUTPUT)" "$(IMAGE_HOSTNAME)"
+
+.PHONY: inject-key
+inject-key:
+	@if [ -z "$(OUTPUT)" ]; then \
+		echo "Error: OUTPUT not set"; \
+		echo "Usage: make inject-key OUTPUT=path/to/image.raw SECRETS_FILE=path/to/secrets.yaml SECRETS_KEY=keypath"; \
+		exit 1; \
+	fi
+	@if [ -z "$(SECRETS_FILE)" ]; then \
+		echo "Error: SECRETS_FILE not set"; \
+		echo "Usage: make inject-key OUTPUT=path/to/image.raw SECRETS_FILE=path/to/secrets.yaml SECRETS_KEY=keypath"; \
+		exit 1; \
+	fi
+	@if [ -z "$(SECRETS_KEY)" ]; then \
+		echo "Error: SECRETS_KEY not set"; \
+		echo "Usage: make inject-key OUTPUT=path/to/image.raw SECRETS_FILE=path/to/secrets.yaml SECRETS_KEY=keypath"; \
+		exit 1; \
+	fi
+	@echo "==> Injecting key into disk image: $(OUTPUT)"
+	./scripts/inject-key.sh "$(OUTPUT)" "$(KEY_PATH)" "$(SECRETS_FILE)" "$(SECRETS_KEY)"
